@@ -22,7 +22,9 @@ func main() {
 
 	mergerapi.RegisterBaseServiceServer(grpcServer, s)
 
-	go clientRun()
+	for i := 0; i < 100; i++ {
+		go clientRun(fmt.Sprintf("cl_№%d", i))
+	}
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatalf("grpc server failed: %v", err)
@@ -30,7 +32,7 @@ func main() {
 	println("end")
 }
 
-func clientRun() {
+func clientRun(name string) {
 	var conn *grpc.ClientConn
 	conn, err := grpc.Dial(":9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -52,6 +54,6 @@ func clientRun() {
 		if err != nil {
 			log.Fatalf("failed RecvMsg: %v", err)
 		}
-		fmt.Printf("received msg!! id: %s\n", msg.Id)
+		fmt.Printf("client (%s) > recive msg with id: %s\n", name, msg.Id)
 	}
 }

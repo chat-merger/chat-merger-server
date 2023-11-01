@@ -12,6 +12,7 @@ type Server struct {
 
 var counter = 0
 
+// создается на каждого клиента
 func (s Server) CreateMessage(server BaseService_CreateMessageServer) error {
 	for {
 		counter = counter + 1
@@ -28,19 +29,26 @@ func (s Server) CreateMessage(server BaseService_CreateMessageServer) error {
 					AuthorName: "saime",
 				},
 			},
-			Modifiers: make([]*Modifier, 0),
-			Action: &MsgBody_ActionValue{
-				ActionValue: 1,
-			},
+			Modifiers:   make([]*Modifier, 0),
+			Action:      &MsgBody_ActionValue{ActionValue: 1},
 			Attachments: make([]*Attachment, 0),
 		}
 		err := server.Send(&newMsg)
 		if err != nil {
-			log.Fatalf("failed sending messages: %v", err)
+			log.Printf("failed sending messages: %v", err)
+			break
 		}
 		time.Sleep(1 * time.Second)
 	}
 	return nil
+}
+
+func clientInputReader(server BaseService_CreateMessageServer) {
+
+}
+
+func newMsgCreator(server BaseService_CreateMessageServer) {
+
 }
 
 func (s Server) Edit(server BaseService_EditServer) error {
