@@ -1,3 +1,3 @@
 [submodule "api-scheme-proto"]
-	path = api-scheme-proto
+	path = proto
 	url = git@github.com:chat-merger/api-scheme-proto.git
