@@ -22,9 +22,10 @@ func main() {
 
 	mergerapi.RegisterBaseServiceServer(grpcServer, s)
 
-	for i := 0; i < 100; i++ {
-		go clientRun(fmt.Sprintf("cl_№%d", i))
-	}
+	//for i := 0; i < 100; i++ {
+	//	go clientRun(fmt.Sprintf("cl_№%d", i))
+	//}
+	go clientRun("cl_0")
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatalf("grpc server failed: %v", err)
@@ -43,17 +44,17 @@ func clientRun(name string) {
 
 	serviceClient := mergerapi.NewBaseServiceClient(conn)
 
-	messageClient, err := serviceClient.CreateMessage(context.Background())
+	messageClient, err := serviceClient.Connect(context.Background())
 	if err != nil {
 		log.Fatalf("failed CreateMessage: %v", err)
 	}
 
 	for {
-		var msg = new(mergerapi.MsgBody)
+		var msg = new(mergerapi.Response)
 		err = messageClient.RecvMsg(msg)
 		if err != nil {
 			log.Fatalf("failed RecvMsg: %v", err)
 		}
-		fmt.Printf("client (%s) > recive msg with id: %s\n", name, msg.Id)
+		fmt.Printf("client (%s) > recive msg: \n\t%#v\n", name, msg.Event)
 	}
 }
