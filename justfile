@@ -1,9 +1,10 @@
 # Golang setup:
 export GOARCH := "amd64"
 export GOOS := "linux"
+export GOPATH := `go env GOPATH`
 
 # Api protobuf scheme:
-api_version_tag := "v0.0.1"
+api_version_tag := "v0.0.1a"
 api_scheme_destination := "./api"
 api_file_name := "mergerapi.proto"
 
