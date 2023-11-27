@@ -14,6 +14,12 @@ default: build
 build:
     go build -o ./bin/main ./main.go
 
+init:
+    install-deps
+    just install-deps
+    just get-api
+    just gen-pb
+
 gen-pb out=generated_pb_files_destination scheme=(api_scheme_destination+"/"+api_file_name):
     mkdir -p {{out}}
     protoc --go_out={{out}} --go-grpc_out={{out}} {{scheme}}
