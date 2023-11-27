@@ -15,7 +15,6 @@ build:
     go build -o ./bin/main ./main.go
 
 init:
-    install-deps
     just install-deps
     just get-api
     just gen-pb
