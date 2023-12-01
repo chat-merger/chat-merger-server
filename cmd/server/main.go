@@ -10,7 +10,6 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	context.WithDeadlineCause()
 	// Graceful Shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
