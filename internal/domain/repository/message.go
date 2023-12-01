@@ -19,13 +19,13 @@ type Client struct {
 type ID string
 
 type Message struct {
-	id ID,
-	replyId *ID,
-	date int64,
-	author *string,
-	from string,
-	silent bool,
-	body Body,	
+	id      ID
+	replyId *ID
+	date    int64
+	author  *string
+	from    string
+	silent  bool
+	body    Body
 }
 
 type Body interface {
@@ -33,30 +33,30 @@ type Body interface {
 }
 
 type BodyText struct {
-	format TextFormat,
-	value String,
+	format TextFormat
+	value  string
 }
 
 type TextFormat string
 
 const (
-	Plain TextFormat = "Plain"
-	Markdown TextFormat =  "Markdown"
+	Plain    TextFormat = "Plain"
+	Markdown TextFormat = "Markdown"
 )
 
 type BodyMedia struct {
-	kind MediaType
+	kind    MediaType
 	caption *string
 	spoiler bool
-	url string
+	url     string
 }
 
 type MediaType string
 
 const (
-	Audio MediaType = "Audio"
-	Video MediaType = "Video"
-	File MediaType = "File"
-	Photo MediaType = "Photo"
+	Audio   MediaType = "Audio"
+	Video   MediaType = "Video"
+	File    MediaType = "File"
+	Photo   MediaType = "Photo"
 	Sticker MediaType = "Sticker"
 )
