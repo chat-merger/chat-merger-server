@@ -1,16 +1,40 @@
 package api
 
 import (
-	"chatmerger/pkg/mergerapi"
+	"log"
 )
 
-var _ mergerapi.BaseServiceServer = (*Server)(nil)
+var _ BaseServiceServer = (*Server)(nil)
 
 type Server struct {
 }
 
-func (s *Server) Connect(connService mergerapi.BaseService_ConnectServer) error {
-	return nil
+func (s *Server) Stop() {
+	//TODO implement me
+	panic("implement me")
 }
 
-// func (s *Server) mustEmbedUnimplementedBaseServiceServer() {}
+func (s *Server) Start() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Server) Connect(connService BaseService_ConnectServer) error {
+	var data = connService.Context()
+	log.Printf("connected %v", data)
+
+	for {
+		r, err := connService.Recv()
+		if err != nil {
+			log.Fatalf("recv op err: %v", err)
+		}
+		resp := Response{
+			Author: r.Author,
+		}
+		connService.Send(&resp)
+	}
+	return nil
+
+}
+
+func (s *Server) mustEmbedUnimplementedBaseServiceServer() {}

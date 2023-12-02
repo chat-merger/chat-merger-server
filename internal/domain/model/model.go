@@ -1,6 +1,6 @@
 package model
 
-type ClientConnection struct {
+type ClientSession struct {
 	Client
 	MsgCh <-chan Message
 }
@@ -18,7 +18,7 @@ type Message struct {
 	ReplyId *ID
 	Date    int64
 	Author  *string
-	From    string
+	From    string // adapter name
 	Silent  bool
 	Body    Body
 }

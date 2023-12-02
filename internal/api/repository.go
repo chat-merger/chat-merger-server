@@ -5,13 +5,13 @@ import (
 	"chatmerger/internal/domain/model"
 )
 
-var _ domain.ClientConnectionRepository = (*ClientConnectRepositoryBase)(nil)
+var _ domain.ClientsSessionRepository = (*ClientConnectRepositoryBase)(nil)
 
 type ClientConnectRepositoryBase struct {
 	conns []*connect
 }
 
-func (c *ClientConnectRepositoryBase) Connect(client model.Client) (*model.ClientConnection, error) {
+func (c *ClientConnectRepositoryBase) Connect(client model.Client) (*model.ClientSession, error) {
 	var newConn = &connect{
 		Client: client,
 		ch:     make(chan model.Message),
@@ -56,8 +56,8 @@ func (c *connect) closeChan() {
 	}
 }
 
-func (c *connect) toDomain() *model.ClientConnection {
-	return &model.ClientConnection{
+func (c *connect) toDomain() *model.ClientSession {
+	return &model.ClientSession{
 		Client: c.Client,
 		MsgCh:  c.ch,
 	}

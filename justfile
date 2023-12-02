@@ -7,7 +7,7 @@ api_version_tag := "v0.0.1a"
 api_scheme_destination := "./api"
 api_file_name := "mergerapi.proto"
 
-generated_pb_files_destination := "./pkg"
+generated_pb_files_destination := "./internal/api"
 
 default: build
 
