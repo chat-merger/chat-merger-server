@@ -1,17 +1,17 @@
-package api
+package client_sessions_repository
 
 import (
 	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
 )
 
-var _ domain.ClientsSessionRepository = (*ClientConnectRepositoryBase)(nil)
+var _ domain.ClientsSessionRepository = (*ClientSessionsRepositoryBase)(nil)
 
-type ClientConnectRepositoryBase struct {
+type ClientSessionsRepositoryBase struct {
 	conns []*connect
 }
 
-func (c *ClientConnectRepositoryBase) Connect(client model.Client) (*model.ClientSession, error) {
+func (c *ClientSessionsRepositoryBase) Connect(client model.Client) (*model.ClientSession, error) {
 	var newConn = &connect{
 		Client: client,
 		ch:     make(chan model.Message),
@@ -20,7 +20,7 @@ func (c *ClientConnectRepositoryBase) Connect(client model.Client) (*model.Clien
 	return newConn.toDomain(), nil
 }
 
-func (c *ClientConnectRepositoryBase) Connected() ([]model.Client, error) {
+func (c *ClientSessionsRepositoryBase) Connected() ([]model.Client, error) {
 	var clients []model.Client
 	for _, conn := range c.conns {
 		clients = append(clients, conn.Client)
@@ -28,7 +28,7 @@ func (c *ClientConnectRepositoryBase) Connected() ([]model.Client, error) {
 	return clients, nil
 }
 
-func (c *ClientConnectRepositoryBase) Disconnect(id int) error {
+func (c *ClientSessionsRepositoryBase) Disconnect(id int) error {
 	for i, conn := range c.conns {
 		if conn.Id == id {
 			// remove from conns list

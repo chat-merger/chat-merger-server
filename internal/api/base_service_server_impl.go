@@ -1,23 +1,6 @@
 package api
 
-import (
-	"log"
-)
-
-var _ BaseServiceServer = (*Server)(nil)
-
-type Server struct {
-}
-
-func (s *Server) Stop() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *Server) Start() {
-	//TODO implement me
-	panic("implement me")
-}
+import "log"
 
 func (s *Server) Connect(connService BaseService_ConnectServer) error {
 	var data = connService.Context()

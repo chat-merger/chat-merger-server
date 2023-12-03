@@ -1,8 +1,13 @@
 package app
 
 import (
+	"chatmerger/internal/api"
 	"chatmerger/internal/domain"
+	"chatmerger/internal/domain/usecase"
+	. "chatmerger/internal/repositories/client_sessions_repository"
+	. "chatmerger/internal/repositories/clients_repository"
 	"context"
+	"fmt"
 )
 
 type State uint8
@@ -20,27 +25,33 @@ const (
 type application struct {
 	clientRepository  domain.ClientRepository
 	sessionRepository domain.ClientsSessionRepository
-	apiServer          domain.ApiServer
+	apiServer         domain.ApiServer
 }
 
 func (a *application) stop() {
 	// todo: a.changeStatus(Stopping)
-	a.apiServer.Stop()
 	cc, err := a.sessionRepository.Connected()
 	if err == nil {
 		for _, client := range cc {
 			a.sessionRepository.Disconnect(client.Id)
 		}
 	}
+	a.apiServer.Stop()
 }
 
 func Run(ctx context.Context) error {
-	var adapterRepo =
+	var sessionsRepo = &ClientSessionsRepositoryBase{}
+	var clientsRepo = &ClientsRepositoryBase{}
+	var usecases = usecase.Usecases{}
+	var apiServer = api.NewApiServer(usecases, api.Config{
+		Host: "localhost",
+		Port: 8080,
+	})
 
 	var app = &application{
-		clientRepository:  nil,
-		sessionRepository: nil,
-		apiServer:         nil,
+		clientRepository:  clientsRepo,
+		sessionRepository: sessionsRepo,
+		apiServer:         apiServer,
 	}
 
 	go func() {
@@ -49,6 +60,11 @@ func Run(ctx context.Context) error {
 			app.stop()
 		}
 	}()
+
+	err := app.apiServer.Start()
+	if err != nil {
+		return fmt.Errorf("start api server failed: %s", err)
+	}
 
 	return nil
 }
