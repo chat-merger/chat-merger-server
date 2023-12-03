@@ -12,7 +12,7 @@ generated_pb_files_destination := "./internal/api"
 default: build
 
 build:
-    go build -o ./bin/main ./main.go
+    go build -o ./bin/main ./cmd/server/main.go
 
 init:
     just install-deps
