@@ -12,14 +12,14 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-
-	go func() {
-		if err := app.Run(ctx); err != nil {
-			log.Fatalf("failed application run: %s", err)
-		}
-	}()
-
+	go runApplication(ctx)
 	gracefulShutdown(cancel)
+}
+
+func runApplication(ctx context.Context) {
+	if err := app.Run(ctx); err != nil {
+		log.Fatalf("failed application run: %s", err)
+	}
 }
 
 func gracefulShutdown(cancel context.CancelFunc) {

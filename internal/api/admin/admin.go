@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"chatmerger/internal/domain/usecase"
+	"chatmerger/internal/usecase"
 	"context"
 	"errors"
 	"fmt"

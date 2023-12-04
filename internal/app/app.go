@@ -4,13 +4,11 @@ import (
 	adm "chatmerger/internal/api/admin"
 	"chatmerger/internal/api/pb"
 	"chatmerger/internal/domain"
-	"chatmerger/internal/domain/usecase"
 	. "chatmerger/internal/repositories/client_sessions_repository"
 	. "chatmerger/internal/repositories/clients_repository"
+	"chatmerger/internal/usecase"
 	"context"
-	"errors"
 	"log"
-	"net/http"
 )
 
 type State uint8
@@ -28,11 +26,12 @@ const (
 type application struct {
 	clientRepository  domain.ClientRepository
 	sessionRepository domain.ClientsSessionRepository
-	apiServer         domain.Handler
-	adminServer       domain.Handler
+	apiHandler        domain.Handler
+	adminHandler      domain.Handler
 }
 
-func (a *application) stop() {
+// use for graceful shutdown
+func (a *application) shutdown() {
 	// todo: a.changeStatus(Stopping)
 	cc, err := a.sessionRepository.Connected()
 	if err == nil {
@@ -45,25 +44,29 @@ func (a *application) stop() {
 func Run(ctx context.Context) error {
 	var sessionsRepo = &ClientSessionsRepositoryBase{}
 	var clientsRepo = &ClientsRepositoryBase{}
-	var apiServer = pb.NewApiServer(pb.Config{
+
+	// create and run clients api handler
+	var apiHandler = pb.NewApiServer(pb.Config{
 		Host: "localhost",
 		Port: 8080,
 	})
+	go serveHandler(apiHandler, ctx)
+
+	// crate and run admin api handler
 	var usecases = usecase.Usecases{}
-	var adminServer = adm.NewAdminServer(usecases, adm.Config{
+	var adminHandler = adm.NewAdminServer(usecases, adm.Config{
 		Host: "localhost",
 		Port: 8081,
 	})
+	go serveHandler(adminHandler, ctx)
 
-	var app = &application{
+	// todo:
+	var _ = &application{
 		clientRepository:  clientsRepo,
 		sessionRepository: sessionsRepo,
-		apiServer:         apiServer,
-		adminServer:       adminServer,
+		apiHandler:        apiHandler,
+		adminHandler:      adminHandler,
 	}
-
-	go app.startAdminServer(ctx)
-	go app.startApiServer(ctx)
 
 	return nil
 }
@@ -71,20 +74,13 @@ func Run(ctx context.Context) error {
 func (a *application) contextCancelHandler(ctx context.Context) {
 	select {
 	case <-ctx.Done():
-		a.stop()
+		a.shutdown()
 	}
 }
 
-func (a *application) startAdminServer(ctx context.Context) {
-	err := a.adminServer.Serve(ctx)
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("admin server serve: %s", err)
-	}
-}
-
-func (a *application) startApiServer(ctx context.Context) {
-	err := a.apiServer.Serve(ctx)
+func serveHandler(h domain.Handler, ctx context.Context) {
+	err := h.Serve(ctx)
 	if err != nil {
-		log.Fatalf("api server serve: %s", err)
+		log.Fatalf("handler serve: %s", err)
 	}
 }
