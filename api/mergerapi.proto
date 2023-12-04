@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package mergerapi;
 
-option go_package = "./mergerapi";
+option go_package = "./pb";
 option java_multiple_files = true;
 option java_outer_classname = "MergerApi";
 

@@ -1,13 +1,16 @@
 package app
 
 import (
-	"chatmerger/internal/api"
+	adm "chatmerger/internal/api/admin"
+	"chatmerger/internal/api/pb"
 	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/usecase"
 	. "chatmerger/internal/repositories/client_sessions_repository"
 	. "chatmerger/internal/repositories/clients_repository"
 	"context"
-	"fmt"
+	"errors"
+	"log"
+	"net/http"
 )
 
 type State uint8
@@ -25,7 +28,8 @@ const (
 type application struct {
 	clientRepository  domain.ClientRepository
 	sessionRepository domain.ClientsSessionRepository
-	apiServer         domain.ApiServer
+	apiServer         domain.Handler
+	adminServer       domain.Handler
 }
 
 func (a *application) stop() {
@@ -36,35 +40,51 @@ func (a *application) stop() {
 			a.sessionRepository.Disconnect(client.Id)
 		}
 	}
-	a.apiServer.Stop()
 }
 
 func Run(ctx context.Context) error {
 	var sessionsRepo = &ClientSessionsRepositoryBase{}
 	var clientsRepo = &ClientsRepositoryBase{}
-	var usecases = usecase.Usecases{}
-	var apiServer = api.NewApiServer(usecases, api.Config{
+	var apiServer = pb.NewApiServer(pb.Config{
 		Host: "localhost",
 		Port: 8080,
+	})
+	var usecases = usecase.Usecases{}
+	var adminServer = adm.NewAdminServer(usecases, adm.Config{
+		Host: "localhost",
+		Port: 8081,
 	})
 
 	var app = &application{
 		clientRepository:  clientsRepo,
 		sessionRepository: sessionsRepo,
 		apiServer:         apiServer,
+		adminServer:       adminServer,
 	}
 
-	go func() {
-		select {
-		case <-ctx.Done():
-			app.stop()
-		}
-	}()
-
-	err := app.apiServer.Start()
-	if err != nil {
-		return fmt.Errorf("start api server failed: %s", err)
-	}
+	go app.startAdminServer(ctx)
+	go app.startApiServer(ctx)
 
 	return nil
+}
+
+func (a *application) contextCancelHandler(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		a.stop()
+	}
+}
+
+func (a *application) startAdminServer(ctx context.Context) {
+	err := a.adminServer.Serve(ctx)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("admin server serve: %s", err)
+	}
+}
+
+func (a *application) startApiServer(ctx context.Context) {
+	err := a.apiServer.Serve(ctx)
+	if err != nil {
+		log.Fatalf("api server serve: %s", err)
+	}
 }
