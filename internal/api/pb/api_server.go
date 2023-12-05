@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"chatmerger/internal/usecase"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
@@ -13,6 +14,7 @@ var _ BaseServiceServer = (*Server)(nil)
 type Server struct {
 	cfg        Config
 	grpcServer *grpc.Server
+	Usecases
 }
 
 type Config struct {
@@ -20,9 +22,16 @@ type Config struct {
 	Port int
 }
 
-func NewApiServer(cfg Config) *Server {
+type Usecases struct {
+	usecase.SendMessageToEveryoneExceptUc
+	usecase.CreateClientSessionUc
+	usecase.DropClientSessionUc
+}
+
+func NewApiServer(cfg Config, usecases Usecases) *Server {
 	var server = &Server{
-		cfg: cfg,
+		cfg:      cfg,
+		Usecases: usecases,
 	}
 	var opts []grpc.ServerOption
 

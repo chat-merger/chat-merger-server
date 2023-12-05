@@ -1,5 +1,17 @@
 package model
 
+type ID struct {
+	value string
+}
+
+func (i ID) Value() string {
+	return i.value
+}
+
+func NewID(val string) ID {
+	return ID{val}
+}
+
 type ClientSession struct {
 	Client
 	MsgCh <-chan Message
@@ -10,8 +22,6 @@ type Client struct {
 	Name   string
 	ApiKey string
 }
-
-type ID string
 
 type Message struct {
 	Id      ID

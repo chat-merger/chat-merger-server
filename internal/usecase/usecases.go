@@ -1,40 +1,31 @@
 package usecase
 
-import (
-	"chatmerger/internal/domain"
-)
+import "chatmerger/internal/domain/model"
 
-var _ domain.Usecases = new(Usecases)
+// grpc api usecases
 
-type Usecases struct {
-	ClientsConnections
-	DropAllClientConnections
-	DropClientConnection
-	ConnectClient
-	ClientsList
-	DeleteClient
+type SendMessageToEveryoneExceptUc interface {
+	SendMessageToEveryoneExcept(ids []model.ID) error
 }
 
-type ClientsConnections struct{}
+type CreateClientSessionUc interface {
+	CreateClientSession(session model.ClientSession) error
+}
+type DropClientSessionUc interface {
+	DropClientSession(ids []model.ID) error
+}
 
-func (u *ClientsConnections) ClientsConnections() {}
+// admin site usecases
 
-type DropAllClientConnections struct{}
-
-func (u *DropAllClientConnections) DropAllClientConnections() {}
-
-type DropClientConnection struct{}
-
-func (u *DropClientConnection) DropClientConnection(id int) {}
-
-type ConnectClient struct{}
-
-func (u *ConnectClient) ConnectClient() {}
-
-type ClientsList struct{}
-
-func (u *ClientsList) ClientsList() {}
-
-type DeleteClient struct{}
-
-func (u *DeleteClient) DeleteClient() {}
+type ClientsListUc interface {
+	ClientsList() ([]model.Client, error)
+}
+type ClientsSessionsListUc interface {
+	ClientsConnectionsList() ([]model.ClientSession, error)
+}
+type CreateClientUc interface {
+	CreateClient() error
+}
+type DeleteClientUc interface {
+	DeleteClient() error
+}

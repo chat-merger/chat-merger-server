@@ -6,6 +6,7 @@ import (
 	"chatmerger/internal/domain"
 	. "chatmerger/internal/repositories/client_sessions_repository"
 	. "chatmerger/internal/repositories/clients_repository"
+	"chatmerger/internal/uc"
 	"chatmerger/internal/usecase"
 	"context"
 	"log"
@@ -28,6 +29,17 @@ type application struct {
 	sessionRepository domain.ClientsSessionRepository
 	apiHandler        domain.Handler
 	adminHandler      domain.Handler
+	usecases          *Usecases
+}
+
+type Usecases struct {
+	usecase.SendMessageToEveryoneExceptUc
+	usecase.CreateClientSessionUc
+	usecase.DropClientSessionUc
+	usecase.ClientsListUc
+	usecase.ClientsSessionsListUc
+	usecase.CreateClientUc
+	usecase.DeleteClientUc
 }
 
 // use for graceful shutdown
@@ -44,16 +56,31 @@ func (a *application) shutdown() {
 func Run(ctx context.Context) error {
 	var sessionsRepo = &ClientSessionsRepositoryBase{}
 	var clientsRepo = &ClientsRepositoryBase{}
+	var usecases = &Usecases{
+		SendMessageToEveryoneExceptUc: &uc.SendMessageToEveryoneExcept{},
+		CreateClientSessionUc:         &uc.CreateClientSession{},
+		DropClientSessionUc:           &uc.DropClientSession{},
+		ClientsListUc:                 &uc.ClientsList{},
+		ClientsSessionsListUc:         &uc.ClientsSessionsList{},
+		CreateClientUc:                &uc.CreateClient{},
+		DeleteClientUc:                &uc.DeleteClient{},
+	}
 
 	// create and run clients api handler
-	var apiHandler = pb.NewApiServer(pb.Config{
-		Host: "localhost",
-		Port: 8080,
-	})
+	var apiHandler = pb.NewApiServer(
+		pb.Config{
+			Host: "localhost",
+			Port: 8080,
+		},
+		pb.Usecases{
+			SendMessageToEveryoneExceptUc: usecases,
+			CreateClientSessionUc:         usecases,
+			DropClientSessionUc:           usecases,
+		},
+	)
 	go serveHandler(apiHandler, ctx)
 
 	// crate and run admin api handler
-	var usecases = usecase.Usecases{}
 	var adminHandler = adm.NewAdminServer(usecases, adm.Config{
 		Host: "localhost",
 		Port: 8081,
