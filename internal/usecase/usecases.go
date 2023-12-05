@@ -9,7 +9,7 @@ type SendMessageToEveryoneExceptUc interface {
 }
 
 type CreateClientSessionUc interface {
-	CreateClientSession(session model.ClientSession) error
+	CreateClientSession(input model.CreateClientSession) (*model.ClientSession, error)
 }
 type DropClientSessionUc interface {
 	DropClientSession(ids []model.ID) error

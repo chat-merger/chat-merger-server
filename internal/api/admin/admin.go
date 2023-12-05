@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"chatmerger/internal/uc"
 	"context"
 	"errors"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 )
 
 type Server struct {
-	uc uc.Usecases
+	//uc uc.Usecases
 	sh *http.Server
 }
 
@@ -19,7 +18,7 @@ type Config struct {
 	Port int
 }
 
-func NewAdminServer(usecases uc.Usecases, cfg Config) *Server {
+func NewAdminServer(cfg Config) *Server {
 	var mux = http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte("hello"))
@@ -37,7 +36,7 @@ func NewAdminServer(usecases uc.Usecases, cfg Config) *Server {
 		MaxHeaderBytes: 1 << 20,
 	}
 	var adminServer = &Server{
-		uc: usecases,
+		//uc: usecases,
 		sh: httpServer,
 	}
 	return adminServer

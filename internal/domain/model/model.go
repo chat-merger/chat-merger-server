@@ -1,16 +1,44 @@
 package model
 
+import "time"
+
+// transfer data (dto) ( handler -> usecase(dto) -> dto to domain -> repository.meth(domain) = result)
+
+type CreateClientSession struct {
+	ApiKey ApiKey
+}
+
+type CreateClient struct {
+	Name string
+}
+
+// value models
+
 type ID struct {
 	value string
 }
 
-func (i ID) Value() string {
-	return i.value
+func (r ID) Value() string {
+	return r.value
 }
 
 func NewID(val string) ID {
 	return ID{val}
 }
+
+type ApiKey struct {
+	value string
+}
+
+func (r ApiKey) Value() string {
+	return r.value
+}
+
+func NewApiKey(val string) ApiKey {
+	return ApiKey{val}
+}
+
+// main models
 
 type ClientSession struct {
 	Client
@@ -18,24 +46,22 @@ type ClientSession struct {
 }
 
 type Client struct {
-	Id     int
+	Id     ID
 	Name   string
-	ApiKey string
+	ApiKey ApiKey
 }
 
 type Message struct {
 	Id      ID
 	ReplyId *ID
-	Date    int64
+	Date    time.Time
 	Author  *string
-	From    string // adapter name
+	From    string // client name
 	Silent  bool
 	Body    Body
 }
 
-type Body interface {
-	IsBody()
-}
+type Body interface{ IsBody() }
 
 type BodyText struct {
 	Format TextFormat

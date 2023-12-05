@@ -28,7 +28,7 @@ func (c *ClientSessionsRepositoryBase) Connected() ([]model.Client, error) {
 	return clients, nil
 }
 
-func (c *ClientSessionsRepositoryBase) Disconnect(id int) error {
+func (c *ClientSessionsRepositoryBase) Disconnect(id model.ID) error {
 	for i, conn := range c.conns {
 		if conn.Id == id {
 			// remove from conns list

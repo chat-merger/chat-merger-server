@@ -81,10 +81,12 @@ func Run(ctx context.Context) error {
 	go serveHandler(apiHandler, ctx)
 
 	// crate and run admin api handler
-	var adminHandler = adm.NewAdminServer(usecases, adm.Config{
-		Host: "localhost",
-		Port: 8081,
-	})
+	var adminHandler = adm.NewAdminServer(
+		//usecases,
+		adm.Config{
+			Host: "localhost",
+			Port: 8081,
+		})
 	go serveHandler(adminHandler, ctx)
 
 	// todo:
