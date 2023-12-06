@@ -58,7 +58,7 @@ func Run(ctx context.Context) error {
 	var clientsRepo = &ClientsRepositoryBase{}
 	var usecases = &Usecases{
 		SendMessageToEveryoneExceptUc: &uc.SendMessageToEveryoneExcept{},
-		CreateClientSessionUc:         &uc.CreateClientSession{},
+		CreateClientSessionUc:         uc.NewCreateClientSession(clientsRepo, sessionsRepo),
 		DropClientSessionUc:           &uc.DropClientSession{},
 		ClientsListUc:                 &uc.ClientsList{},
 		ClientsSessionsListUc:         &uc.ClientsSessionsList{},
@@ -82,11 +82,17 @@ func Run(ctx context.Context) error {
 
 	// crate and run admin api handler
 	var adminHandler = adm.NewAdminServer(
-		//usecases,
 		adm.Config{
 			Host: "localhost",
 			Port: 8081,
-		})
+		},
+		adm.Usecases{
+			CreateClientUc:        usecases,
+			DeleteClientUc:        usecases,
+			ClientsListUc:         usecases,
+			ClientsSessionsListUc: usecases,
+		},
+	)
 	go serveHandler(adminHandler, ctx)
 
 	// todo:

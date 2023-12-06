@@ -24,7 +24,7 @@ type ClientsSessionsListUc interface {
 	ClientsConnectionsList() ([]model.ClientSession, error)
 }
 type CreateClientUc interface {
-	CreateClient() error
+	CreateClient(input model.CreateClient) error
 }
 type DeleteClientUc interface {
 	DeleteClient() error

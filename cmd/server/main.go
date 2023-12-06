@@ -28,7 +28,7 @@ func gracefulShutdown(cancel context.CancelFunc) {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	<-quit
-	var timeout = 5 * time.Second
+	var timeout = 2 * time.Second
 	log.Printf("after %v seconds, the server will stop", timeout.Seconds())
 	cancel()
 	time.Sleep(timeout)

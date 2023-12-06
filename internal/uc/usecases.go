@@ -13,22 +13,6 @@ func (s *SendMessageToEveryoneExcept) SendMessageToEveryoneExcept(ids []model.ID
 	return nil
 }
 
-var _ usecase.CreateClientSessionUc = (*CreateClientSession)(nil)
-
-type CreateClientSession struct{}
-
-func (c *CreateClientSession) CreateClientSession(input model.CreateClientSession) (*model.ClientSession, error) {
-	return nil, nil
-}
-
-var _ usecase.DropClientSessionUc = (*DropClientSession)(nil)
-
-type DropClientSession struct{}
-
-func (d *DropClientSession) DropClientSession(ids []model.ID) error {
-	return nil
-}
-
 var _ usecase.ClientsListUc = (*ClientsList)(nil)
 
 type ClientsList struct{}
@@ -49,7 +33,7 @@ var _ usecase.CreateClientUc = (*CreateClient)(nil)
 
 type CreateClient struct{}
 
-func (c *CreateClient) CreateClient() error {
+func (c *CreateClient) CreateClient(input model.CreateClient) error {
 	return nil
 }
 

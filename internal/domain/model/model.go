@@ -9,7 +9,7 @@ type CreateClientSession struct {
 }
 
 type CreateClient struct {
-	Name string
+	Name string `json:"name,omitempty"`
 }
 
 // value models

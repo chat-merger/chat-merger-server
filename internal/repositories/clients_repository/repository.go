@@ -5,14 +5,13 @@ import (
 )
 
 type ClientsRepositoryBase struct {
+	clients []model.Client
 }
 
 func (c *ClientsRepositoryBase) GetClients() []model.Client {
-	//TODO implement me
-	panic("implement me")
+	return c.clients
 }
 
 func (c *ClientsRepositoryBase) SetClients(clients []model.Client) {
-	//TODO implement me
-	panic("implement me")
+	c.clients = clients
 }
