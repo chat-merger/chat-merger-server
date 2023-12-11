@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // transfer data (dto) ( handler -> usecase(dto) -> dto to domain -> repository.meth(domain) = result)
 
@@ -9,13 +12,17 @@ type CreateClientSession struct {
 }
 
 type CreateClient struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // value models
 
 type ID struct {
 	value string
+}
+
+func (r ID) String() string {
+	return fmt.Sprintf("%s", r.value)
 }
 
 func (r ID) Value() string {
@@ -28,6 +35,10 @@ func NewID(val string) ID {
 
 type ApiKey struct {
 	value string
+}
+
+func (r ApiKey) String() string {
+	return fmt.Sprintf("%s", r.value)
 }
 
 func (r ApiKey) Value() string {

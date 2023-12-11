@@ -27,7 +27,7 @@ type Usecases struct {
 	usecase.DropClientSessionUc
 }
 
-func NewApiServer(cfg Config, usecases Usecases) *Server {
+func NewClientsServer(cfg Config, usecases Usecases) *Server {
 	var server = &Server{
 		cfg:      cfg,
 		Usecases: usecases,

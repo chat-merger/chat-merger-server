@@ -25,7 +25,7 @@ const (
 )
 
 type application struct {
-	clientRepository  domain.ClientRepository
+	clientRepository  domain.ClientsRepository
 	sessionRepository domain.ClientsSessionRepository
 	apiHandler        domain.Handler
 	adminHandler      domain.Handler
@@ -37,7 +37,7 @@ type Usecases struct {
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
 	usecase.ClientsListUc
-	usecase.ClientsSessionsListUc
+	usecase.ConnectedClientsListUc
 	usecase.CreateClientUc
 	usecase.DeleteClientUc
 }
@@ -57,17 +57,19 @@ func Run(ctx context.Context) error {
 	var sessionsRepo = &ClientSessionsRepositoryBase{}
 	var clientsRepo = &ClientsRepositoryBase{}
 	var usecases = &Usecases{
+		ConnectedClientsListUc: uc.NewConnectedClientsList(sessionsRepo),
+		// clients api server
 		SendMessageToEveryoneExceptUc: &uc.SendMessageToEveryoneExcept{},
 		CreateClientSessionUc:         uc.NewCreateClientSession(clientsRepo, sessionsRepo),
-		DropClientSessionUc:           &uc.DropClientSession{},
-		ClientsListUc:                 &uc.ClientsList{},
-		ClientsSessionsListUc:         &uc.ClientsSessionsList{},
-		CreateClientUc:                &uc.CreateClient{},
-		DeleteClientUc:                &uc.DeleteClient{},
+		DropClientSessionUc:           uc.NewDropClientSession(sessionsRepo),
+		// admin panel api server
+		ClientsListUc:  uc.NewClientsList(clientsRepo),
+		CreateClientUc: uc.NewCreateClient(clientsRepo),
+		DeleteClientUc: uc.NewDeleteClient(clientsRepo),
 	}
 
 	// create and run clients api handler
-	var apiHandler = pb.NewApiServer(
+	var clientsApiHandler = pb.NewClientsServer(
 		pb.Config{
 			Host: "localhost",
 			Port: 8080,
@@ -78,29 +80,29 @@ func Run(ctx context.Context) error {
 			DropClientSessionUc:           usecases,
 		},
 	)
-	go serveHandler(apiHandler, ctx)
+	go serveHandler(clientsApiHandler, ctx)
 
-	// crate and run admin api handler
-	var adminHandler = adm.NewAdminServer(
+	// crate and run admin panel api handler
+	var adminPanelApiHandler = adm.NewAdminPanelServer(
 		adm.Config{
 			Host: "localhost",
 			Port: 8081,
 		},
 		adm.Usecases{
-			CreateClientUc:        usecases,
-			DeleteClientUc:        usecases,
-			ClientsListUc:         usecases,
-			ClientsSessionsListUc: usecases,
+			CreateClientUc:         usecases,
+			DeleteClientUc:         usecases,
+			ClientsListUc:          usecases,
+			ConnectedClientsListUc: usecases,
 		},
 	)
-	go serveHandler(adminHandler, ctx)
+	go serveHandler(adminPanelApiHandler, ctx)
 
 	// todo:
 	var _ = &application{
 		clientRepository:  clientsRepo,
 		sessionRepository: sessionsRepo,
-		apiHandler:        apiHandler,
-		adminHandler:      adminHandler,
+		apiHandler:        clientsApiHandler,
+		adminHandler:      adminPanelApiHandler,
 	}
 
 	return nil

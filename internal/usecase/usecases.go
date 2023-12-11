@@ -20,12 +20,12 @@ type DropClientSessionUc interface {
 type ClientsListUc interface {
 	ClientsList() ([]model.Client, error)
 }
-type ClientsSessionsListUc interface {
-	ClientsConnectionsList() ([]model.ClientSession, error)
+type ConnectedClientsListUc interface {
+	ConnectedClientsList() ([]model.Client, error)
 }
 type CreateClientUc interface {
 	CreateClient(input model.CreateClient) error
 }
 type DeleteClientUc interface {
-	DeleteClient() error
+	DeleteClients(ids []model.ID) error
 }

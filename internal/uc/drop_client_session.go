@@ -12,6 +12,10 @@ type DropClientSession struct {
 	sessionsRepo domain.ClientsSessionRepository
 }
 
+func NewDropClientSession(sessionsRepo domain.ClientsSessionRepository) *DropClientSession {
+	return &DropClientSession{sessionsRepo: sessionsRepo}
+}
+
 func (d *DropClientSession) DropClientSession(ids []model.ID) error {
 	for _, id := range ids {
 		d.sessionsRepo.Disconnect(id) // todo

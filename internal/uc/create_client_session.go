@@ -12,10 +12,10 @@ var _ usecase.CreateClientSessionUc = (*CreateClientSession)(nil)
 
 type CreateClientSession struct {
 	sessionRepo domain.ClientsSessionRepository
-	clientRepo  domain.ClientRepository
+	clientRepo  domain.ClientsRepository
 }
 
-func NewCreateClientSession(clientRepo domain.ClientRepository, sessionRepo domain.ClientsSessionRepository) *CreateClientSession {
+func NewCreateClientSession(clientRepo domain.ClientsRepository, sessionRepo domain.ClientsSessionRepository) *CreateClientSession {
 	return &CreateClientSession{sessionRepo: sessionRepo, clientRepo: clientRepo}
 }
 

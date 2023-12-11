@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -23,15 +25,15 @@ type Usecases struct {
 	usecase.CreateClientUc
 	usecase.DeleteClientUc
 	usecase.ClientsListUc
-	usecase.ClientsSessionsListUc
+	usecase.ConnectedClientsListUc
 }
 
-func NewAdminServer(cfg Config, usecases Usecases) *Server {
-	var mux = http.NewServeMux()
+func NewAdminPanelServer(cfg Config, usecases Usecases) *Server {
+	var router = mux.NewRouter()
 
 	httpServer := &http.Server{
-		Addr:           fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Handler:        mux,
+		Addr:           cfg.Host + ":" + strconv.Itoa(cfg.Port),
+		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
@@ -41,7 +43,7 @@ func NewAdminServer(cfg Config, usecases Usecases) *Server {
 		sh:       httpServer,
 		Usecases: usecases,
 	}
-	adminServer.registerHttpServerRoutes(mux)
+	adminServer.registerHttpServerRoutes(router)
 	return adminServer
 }
 
@@ -61,21 +63,12 @@ func (s *Server) contextCancelHandler(ctx context.Context) {
 	}
 }
 
-func (s *Server) registerHttpServerRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/ping", func(writer http.ResponseWriter, request *http.Request) {
-		var b []byte
-		request.Body.Read(b)
-		writer.Write(b)
-	})
-	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		if request.Method == http.MethodPost {
-			s.createClientHandler(writer, request)
-		} else if request.Method == http.MethodDelete {
-			s.deleteClientHandler(writer, request)
-		} else if request.Method == http.MethodGet {
-			s.getClientsHandler(writer, request)
-		} else {
-			writer.WriteHeader(http.StatusNotFound)
-		}
-	})
+func (s *Server) registerHttpServerRoutes(router *mux.Router) {
+
+	router.HandleFunc("/", s.index)
+
+	//var apiRoutes = router.PathPrefix("/api")
+	router.Path("/api").HandlerFunc(s.createClientHandler).Methods(http.MethodPost)
+	router.Path("/api").HandlerFunc(s.deleteClientHandler).Methods(http.MethodDelete)
+	router.Path("/api").HandlerFunc(s.getClientsHandler).Methods(http.MethodGet)
 }

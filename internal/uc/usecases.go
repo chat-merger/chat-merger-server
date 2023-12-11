@@ -1,6 +1,7 @@
 package uc
 
 import (
+	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
 	"chatmerger/internal/usecase"
 )
@@ -9,38 +10,34 @@ var _ usecase.SendMessageToEveryoneExceptUc = (*SendMessageToEveryoneExcept)(nil
 
 type SendMessageToEveryoneExcept struct{}
 
-func (s *SendMessageToEveryoneExcept) SendMessageToEveryoneExcept(ids []model.ID) error {
+func (r *SendMessageToEveryoneExcept) SendMessageToEveryoneExcept(ids []model.ID) error {
 	return nil
 }
 
 var _ usecase.ClientsListUc = (*ClientsList)(nil)
 
-type ClientsList struct{}
-
-func (c *ClientsList) ClientsList() ([]model.Client, error) {
-	return nil, nil
+type ClientsList struct {
+	clientsRepos domain.ClientsRepository
 }
 
-var _ usecase.ClientsSessionsListUc = (*ClientsSessionsList)(nil)
-
-type ClientsSessionsList struct{}
-
-func (c *ClientsSessionsList) ClientsConnectionsList() ([]model.ClientSession, error) {
-	return nil, nil
+func NewClientsList(clientsRepos domain.ClientsRepository) *ClientsList {
+	return &ClientsList{clientsRepos: clientsRepos}
 }
 
-var _ usecase.CreateClientUc = (*CreateClient)(nil)
-
-type CreateClient struct{}
-
-func (c *CreateClient) CreateClient(input model.CreateClient) error {
-	return nil
+func (r *ClientsList) ClientsList() ([]model.Client, error) {
+	return r.clientsRepos.GetClients(), nil
 }
 
-var _ usecase.DeleteClientUc = (*DeleteClient)(nil)
+var _ usecase.ConnectedClientsListUc = (*ConnectedClientsList)(nil)
 
-type DeleteClient struct{}
+type ConnectedClientsList struct {
+	sessionsRepo domain.ClientsSessionRepository
+}
 
-func (d *DeleteClient) DeleteClient() error {
-	return nil
+func NewConnectedClientsList(sessionsRepo domain.ClientsSessionRepository) *ConnectedClientsList {
+	return &ConnectedClientsList{sessionsRepo: sessionsRepo}
+}
+
+func (r *ConnectedClientsList) ConnectedClientsList() ([]model.Client, error) {
+	return r.sessionsRepo.Connected()
 }

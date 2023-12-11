@@ -2,7 +2,7 @@ package domain
 
 import "chatmerger/internal/domain/model"
 
-type ClientRepository interface {
+type ClientsRepository interface {
 	GetClients() []model.Client
 	SetClients(clients []model.Client)
 }
