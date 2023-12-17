@@ -21,7 +21,11 @@
 
 <img id="indicator" class="htmx-indicator" src="https://samherbert.net/svg-loaders/svg-loaders/spinning-circles.svg">
 
-<div hx-get="/api" id="clients" hx-trigger="load"></div>
+<div
+        hx-get="/api"
+        id="clients"
+        hx-trigger="load, every 2s"
+></div>
 
 </body>
 </html>
