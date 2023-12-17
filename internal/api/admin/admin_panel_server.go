@@ -69,6 +69,6 @@ func (s *Server) registerHttpServerRoutes(router *mux.Router) {
 
 	//var apiRoutes = router.PathPrefix("/api")
 	router.Path("/api").HandlerFunc(s.createClientHandler).Methods(http.MethodPost)
-	router.Path("/api").HandlerFunc(s.deleteClientHandler).Methods(http.MethodDelete)
+	router.Path("/api/{id}").HandlerFunc(s.deleteClientHandler).Methods(http.MethodDelete)
 	router.Path("/api").HandlerFunc(s.getClientsHandler).Methods(http.MethodGet)
 }

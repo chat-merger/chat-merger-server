@@ -2,10 +2,11 @@ package admin
 
 import (
 	"chatmerger/internal/domain/model"
-	"encoding/json"
+	"github.com/gorilla/mux"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,17 +19,6 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		input = model.CreateClient{Name: name}
 	}
-	//var err = json.NewDecoder(r.Body).Decode(&input)
-	//if err != nil {
-	//	log.Printf("failed parse request: %s", err)
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	var name = r.PostFormValue("name")
-	//	if name == "" {
-	//		return
-	//	} else {
-	//		input = model.CreateClient{Name: name}
-	//	}
-	//}
 	log.Printf("body: %#v", input)
 	// создание клиента через юзкейс
 	err := s.CreateClient(input)
@@ -38,9 +28,18 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
+
+	var clients, _ = s.ClientsList()
+	var resp = map[string][]model.Client{
+		"Clients": clients,
+	}
+	tmpl.Execute(w, resp)
 }
 
 func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
+	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
 
 	clients, err := s.ClientsList()
 	if err != nil {
@@ -48,20 +47,16 @@ func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(clients)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	var resp = map[string][]model.Client{
+		"Clients": clients,
 	}
-
-	w.Write(response)
+	tmpl.Execute(w, resp)
 }
 
 func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
-	//log.Printf("%#v", r.)
-	var idStr = r.FormValue("id")
-	if idStr == "" {
-		log.Printf("failed parse request")
+	vars := mux.Vars(r)
+	idStr, ok := vars["id"]
+	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -74,11 +69,11 @@ func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) index(w http.ResponseWriter, r *http.Request) {
-	var tmpl = template.Must(template.ParseFiles("web/index.html"))
-
-	var clients, _ = s.ClientsList()
-	var resp = map[string][]model.Client{
-		"Clients": clients,
+	file, err := os.ReadFile("web/index.html")
+	if err != nil {
+		log.Printf("failed read index.html file")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	tmpl.Execute(w, resp)
+	w.Write(file)
 }

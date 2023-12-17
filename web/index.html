@@ -11,26 +11,17 @@
             crossorigin="anonymous"></script>
 </header>
 <body>
-<form hx-post="/api">
+
+<form hx-post="/api" hx-target="#clients" hx-indicator="#indicator">
     <h1>Create client</h1>
     <label for="client-name">Name</label>
     <input type="text" name="name" id="client-name" class="form-control"/>
     <button type="submit">Submit</button>
 </form>
 
-{{ range .Clients }}
-<table>
-    <td>
-        <tr><p>
-            Client ID: {{ .Id }} <br>
-            Name: {{ .Name }} <br>
-            ApiKey: {{ .ApiKey }}
-        </p></tr>
-        <tr><button hx-delete="/api" hx-include="[name='id']">remove</button></tr>
-        <input type="hidden" value="{{.Id}}" name="id">
-    </td>
-</table>
+<img id="indicator" class="htmx-indicator" src="https://samherbert.net/svg-loaders/svg-loaders/spinning-circles.svg">
 
-{{ end }}
+<div hx-get="/api" id="clients" hx-trigger="load"></div>
+
 </body>
 </html>
