@@ -55,7 +55,10 @@ func (a *application) shutdown() {
 
 func Run(ctx context.Context) error {
 	var sessionsRepo = &ClientSessionsRepositoryBase{}
-	var clientsRepo = &ClientsRepositoryBase{}
+	clientsRepo, err := NewClientsRepositoryBase(Config{FilePath: "./clients.json"})
+	if err != nil {
+		log.Fatalf("create clients repository: %s", err)
+	}
 	var usecases = &Usecases{
 		ConnectedClientsListUc: uc.NewConnectedClientsList(sessionsRepo),
 		// clients api server

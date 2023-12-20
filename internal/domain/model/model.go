@@ -57,9 +57,9 @@ type ClientSession struct {
 }
 
 type Client struct {
-	Id     ID
-	Name   string
-	ApiKey ApiKey
+	Id     ID     `json:"id"`
+	Name   string `json:"name,omitempty"`
+	ApiKey ApiKey `json:"api_key"`
 }
 
 type Message struct {
