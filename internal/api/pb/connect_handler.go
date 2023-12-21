@@ -19,18 +19,21 @@ func (s *Server) Connect(connService BaseService_ConnectServer) error {
 	}
 	//  when need send msg from some other clients to current connect
 	go func() {
-		select {
-		case msg, ok := <-client.MsgCh:
-			if !ok {
-				log.Printf("failed to read channel of client %#v", client)
-			} else {
-				response, err := MessageToResponse(msg)
-				if err != nil {
-					log.Printf("failed convert msg to respponse: %s", err)
-				}
-				err = connService.Send(response)
-				if err != nil {
-					log.Printf("failed send response to client (%s): %s", client.Name, err)
+		for {
+			select {
+			case msg, ok := <-client.MsgCh:
+				if !ok {
+					log.Printf("failed to read channel of client %#v", client)
+					return
+				} else {
+					response, err := MessageToResponse(msg)
+					if err != nil {
+						log.Printf("failed convert msg to respponse: %s", err)
+					}
+					err = connService.Send(response)
+					if err != nil {
+						log.Printf("failed send response to client (%s): %s", client.Name, err)
+					}
 				}
 			}
 		}

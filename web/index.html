@@ -12,14 +12,12 @@
 </header>
 <body>
 
-<form hx-post="/api" hx-target="#clients" hx-indicator="#indicator">
+<form hx-post="/api" hx-target="#clients">
     <h1>Create client</h1>
     <label for="client-name">Name</label>
     <input type="text" name="name" id="client-name" class="form-control"/>
     <button type="submit">Submit</button>
 </form>
-
-<img id="indicator" class="htmx-indicator" src="https://samherbert.net/svg-loaders/svg-loaders/spinning-circles.svg">
 
 <div
         hx-get="/api"

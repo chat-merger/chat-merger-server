@@ -33,14 +33,14 @@ func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg 
 	if err != nil {
 		return fmt.Errorf("connected clients: %s", err)
 	}
-	for _, id := range ids {
-		slices.DeleteFunc(connected, func(client model.Client) bool {
-			return client.Id.Value() == id.Value()
-		})
-	}
 
 	for _, client := range connected {
-		r.sessionsRepo.Send(newMsg, client.Id)
+		var isExcepted = slices.ContainsFunc(ids, func(exceptedId model.ID) bool {
+			return client.Id == exceptedId
+		})
+		if !isExcepted {
+			r.sessionsRepo.Send(newMsg, client.Id)
+		}
 	}
 
 	return nil
