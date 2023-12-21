@@ -3,6 +3,7 @@ package pb
 import (
 	"chatmerger/internal/domain/model"
 	"errors"
+	"log"
 	"time"
 )
 
@@ -55,12 +56,14 @@ func MessageToResponse(msg model.Message) (*Response, error) {
 	}
 	// add body
 	switch msg.Body.(type) {
-	case model.BodyText:
-		text := msg.Body.(model.BodyText)
-		response.Body = ModelBodyTextToPb(text)
-	case model.BodyMedia:
-		media := msg.Body.(model.BodyMedia)
-		response.Body = ModelBodyMediaToPb(media)
+	case *model.BodyText:
+		text := msg.Body.(*model.BodyText)
+		response.Body = ModelBodyTextToPb(*text)
+	case *model.BodyMedia:
+		media := msg.Body.(*model.BodyMedia)
+		response.Body = ModelBodyMediaToPb(*media)
+	default:
+		log.Fatalf("unknown msg.Body:  %#v", msg.Body)
 	}
 	return response, nil
 }

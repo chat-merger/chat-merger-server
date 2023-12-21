@@ -79,7 +79,7 @@ type BodyText struct {
 	Value  string
 }
 
-func (b BodyText) IsBody() {}
+func (b *BodyText) IsBody() {}
 
 type TextFormat string
 
@@ -95,7 +95,7 @@ type BodyMedia struct {
 	Url     string
 }
 
-func (b BodyMedia) IsBody() {}
+func (b *BodyMedia) IsBody() {}
 
 type MediaType string
 

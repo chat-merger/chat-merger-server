@@ -9,9 +9,9 @@
     <tbody hx-target="closest tr">
     {{ range .Clients }}
     <tr>
-        <th scope="row">{{ .Id }}</th>
-        <td>{{ .Name }}</td>
-        <td>{{ .ApiKey }}</td>
+        <th style="color: dimgray" scope="row">{{ .Id }}</th>
+        <td style="color: dimgray">{{ .Name }}</td>
+        <td style="color: dimgray">{{ .ApiKey }}</td>
         <td>
             <button
                     hx-delete="/api/{{.Id}}"
@@ -21,5 +21,11 @@
         </td>
     </tr>
     {{ end }}
+    <tr>
+        <th scope="row" style="color: green">Online:</th>
+        <td colspan="4">
+            {{ .Connections }}
+        </td>
+    </tr>
     </tbody>
 </table>

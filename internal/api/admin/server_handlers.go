@@ -2,8 +2,10 @@ package admin
 
 import (
 	"chatmerger/internal/domain/model"
+	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -29,28 +31,21 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
-
-	var clients, _ = s.ClientsList()
-	var resp = map[string][]model.Client{
-		"Clients": clients,
-	}
-	tmpl.Execute(w, resp)
-}
-
-func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
-	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
-
-	clients, err := s.ClientsList()
+	err = s.executeTemplWithClientsTable(w)
 	if err != nil {
+		log.Fatalf("execute templ  with clients: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
 
-	var resp = map[string][]model.Client{
-		"Clients": clients,
+func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
+	err := s.executeTemplWithClientsTable(w)
+	if err != nil {
+		log.Fatalf("execute templ  with clients: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	tmpl.Execute(w, resp)
 }
 
 func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,4 +71,26 @@ func (s *Server) index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(file)
+}
+
+func (s *Server) executeTemplWithClientsTable(wr io.Writer) error {
+	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
+
+	clients, err := s.ClientsList()
+	if err != nil {
+		return fmt.Errorf("get clients list: %s", err)
+	}
+	conns, err := s.ConnectedClientsList()
+	if err != nil {
+		return fmt.Errorf("get connected list: %s", err)
+	}
+	var connectedNames []string
+	for _, conn := range conns {
+		connectedNames = append(connectedNames, conn.Name)
+	}
+	var resp = map[string]any{
+		"Clients":     clients,
+		"Connections": connectedNames,
+	}
+	return tmpl.Execute(wr, resp)
 }
