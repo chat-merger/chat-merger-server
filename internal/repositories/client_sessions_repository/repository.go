@@ -3,16 +3,32 @@ package client_sessions_repository
 import (
 	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
+	"errors"
 )
 
 var _ domain.ClientsSessionRepository = (*ClientSessionsRepositoryBase)(nil)
 
 type ClientSessionsRepositoryBase struct {
-	conns []*connect
+	conns []connect
+}
+
+func (c *ClientSessionsRepositoryBase) Send(msg model.Message, clientId model.ID) error {
+	var expectConn *connect
+	for _, conn := range c.conns {
+		if conn.Id == clientId {
+			expectConn = &conn
+			break
+		}
+	}
+	if expectConn == nil {
+		return errors.New("client not connected")
+	}
+
+	return expectConn.sendMsg(msg)
 }
 
 func (c *ClientSessionsRepositoryBase) Connect(client model.Client) (*model.ClientSession, error) {
-	var newConn = &connect{
+	var newConn = connect{
 		Client: client,
 		ch:     make(chan model.Message),
 	}
@@ -43,6 +59,15 @@ func (c *ClientSessionsRepositoryBase) Disconnect(id model.ID) error {
 type connect struct {
 	model.Client
 	ch chan model.Message
+}
+
+func (c *connect) sendMsg(msg model.Message) error {
+	select {
+	case c.ch <- msg:
+		return nil
+	default:
+		return errors.New("channel do not listing")
+	}
 }
 
 func (c *connect) closeChan() {

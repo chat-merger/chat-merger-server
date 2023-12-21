@@ -79,6 +79,8 @@ type BodyText struct {
 	Value  string
 }
 
+func (b BodyText) IsBody() {}
+
 type TextFormat string
 
 const (
@@ -93,6 +95,8 @@ type BodyMedia struct {
 	Url     string
 }
 
+func (b BodyMedia) IsBody() {}
+
 type MediaType string
 
 const (
@@ -102,3 +106,14 @@ const (
 	Photo   MediaType = "Photo"
 	Sticker MediaType = "Sticker"
 )
+
+// create message
+
+type CreateMessage struct {
+	ReplyId *ID
+	Date    time.Time
+	Author  *string
+	From    string // client name
+	Silent  bool
+	Body    Body
+}

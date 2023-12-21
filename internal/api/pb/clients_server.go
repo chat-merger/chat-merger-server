@@ -22,7 +22,7 @@ type Config struct {
 }
 
 type Usecases struct {
-	usecase.SendMessageToEveryoneExceptUc
+	usecase.CreateAndSendMsgToEveryoneExceptUc
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
 }

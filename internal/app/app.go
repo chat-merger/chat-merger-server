@@ -33,7 +33,7 @@ type application struct {
 }
 
 type Usecases struct {
-	usecase.SendMessageToEveryoneExceptUc
+	usecase.CreateAndSendMsgToEveryoneExceptUc
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
 	usecase.ClientsListUc
@@ -62,9 +62,9 @@ func Run(ctx context.Context) error {
 	var usecases = &Usecases{
 		ConnectedClientsListUc: uc.NewConnectedClientsList(sessionsRepo),
 		// clients api server
-		SendMessageToEveryoneExceptUc: &uc.SendMessageToEveryoneExcept{},
-		CreateClientSessionUc:         uc.NewCreateClientSession(clientsRepo, sessionsRepo),
-		DropClientSessionUc:           uc.NewDropClientSession(sessionsRepo),
+		CreateAndSendMsgToEveryoneExceptUc: uc.NewCreateAndSendMsgToEveryoneExcept(sessionsRepo),
+		CreateClientSessionUc:              uc.NewCreateClientSession(clientsRepo, sessionsRepo),
+		DropClientSessionUc:                uc.NewDropClientSession(sessionsRepo),
 		// admin panel api server
 		ClientsListUc:  uc.NewClientsList(clientsRepo),
 		CreateClientUc: uc.NewCreateClient(clientsRepo),
@@ -78,9 +78,9 @@ func Run(ctx context.Context) error {
 			Port: 8080,
 		},
 		pb.Usecases{
-			SendMessageToEveryoneExceptUc: usecases,
-			CreateClientSessionUc:         usecases,
-			DropClientSessionUc:           usecases,
+			CreateAndSendMsgToEveryoneExceptUc: usecases,
+			CreateClientSessionUc:              usecases,
+			DropClientSessionUc:                usecases,
 		},
 	)
 	go serveHandler(clientsApiHandler, ctx)

@@ -4,8 +4,8 @@ import "chatmerger/internal/domain/model"
 
 // grpc api usecases
 
-type SendMessageToEveryoneExceptUc interface {
-	SendMessageToEveryoneExcept(ids []model.ID) error
+type CreateAndSendMsgToEveryoneExceptUc interface {
+	CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids []model.ID) error
 }
 
 type CreateClientSessionUc interface {

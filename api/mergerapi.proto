@@ -38,12 +38,13 @@ message Media {
 
 // INPUT:
 message Request {
-  int64 created_at = 1;
-  optional string author = 2;
-  bool isSilent = 3;
+  optional string reply_msg_id = 1;
+  int64 created_at = 2;
+  optional string author = 3;
+  bool isSilent = 4;
   oneof body {
-    Text text = 4;
-    Media media = 5;
+    Text text = 5;
+    Media media = 6;
   }
 }
 
