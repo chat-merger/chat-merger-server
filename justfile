@@ -2,7 +2,7 @@
 export GOARCH := "amd64"
 export GOOS := "linux"
 
-# Protoc plugins
+# Protoc plugins:
 protoc_gen_go_version  := "v1.31.0"
 protoc_gen_go_grpc_version  := "v1.3.0"
 
@@ -13,10 +13,13 @@ api_file_name := "mergerapi.proto"
 
 generated_pb_package_destination := "./internal/api"
 
+# build settings:
+build_output_file_or_directory := "./bin/server"
+
 default: build
 
-build:
-    go build -o ./bin/main ./cmd/server/main.go
+build *FLAGS:
+    go build -o {{build_output_file_or_directory}} {{FLAGS}}  ./cmd/server/main.go
 
 init:
     just install-deps

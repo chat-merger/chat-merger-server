@@ -29,10 +29,6 @@ type requiredUsecases interface {
 	usecase.DropClientSessionUc
 }
 
-type somePrivateInterface interface {
-	SomePublicMethod()
-}
-
 func NewGrpcSideServer(cfg Config, usecases requiredUsecases) *GrpcSideServer {
 	var server = &GrpcSideServer{
 		cfg:              cfg,

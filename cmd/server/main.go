@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.Ltime | log.Ldate)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	go gracefulShutdown(cancel)
 	runApplication(ctx)
