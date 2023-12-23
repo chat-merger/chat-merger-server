@@ -9,10 +9,10 @@ import (
 var _ usecase.ConnectedClientsListUc = (*ConnectedClientsList)(nil)
 
 type ConnectedClientsList struct {
-	sessionsRepo domain.ClientsSessionRepository
+	sessionsRepo domain.ClientSessionsRepository
 }
 
-func NewConnectedClientsList(sessionsRepo domain.ClientsSessionRepository) *ConnectedClientsList {
+func NewConnectedClientsList(sessionsRepo domain.ClientSessionsRepository) *ConnectedClientsList {
 	return &ConnectedClientsList{sessionsRepo: sessionsRepo}
 }
 

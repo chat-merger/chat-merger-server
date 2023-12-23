@@ -12,10 +12,10 @@ import (
 var _ usecase.CreateAndSendMsgToEveryoneExceptUc = (*CreateAndSendMsgToEveryoneExcept)(nil)
 
 type CreateAndSendMsgToEveryoneExcept struct {
-	sessionsRepo domain.ClientsSessionRepository
+	sessionsRepo domain.ClientSessionsRepository
 }
 
-func NewCreateAndSendMsgToEveryoneExcept(sessionsRepo domain.ClientsSessionRepository) *CreateAndSendMsgToEveryoneExcept {
+func NewCreateAndSendMsgToEveryoneExcept(sessionsRepo domain.ClientSessionsRepository) *CreateAndSendMsgToEveryoneExcept {
 	return &CreateAndSendMsgToEveryoneExcept{sessionsRepo: sessionsRepo}
 }
 

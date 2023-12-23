@@ -9,12 +9,12 @@ import (
 	"net"
 )
 
-var _ pb.BaseServiceServer = (*Server)(nil)
+var _ pb.BaseServiceServer = (*GrpcSideServer)(nil)
 
-type Server struct {
+type GrpcSideServer struct {
 	cfg        Config
 	grpcServer *grpc.Server
-	Usecases
+	requiredUsecases
 	pb.UnimplementedBaseServiceServer
 }
 
@@ -23,16 +23,20 @@ type Config struct {
 	Port int
 }
 
-type Usecases struct {
+type requiredUsecases interface {
 	usecase.CreateAndSendMsgToEveryoneExceptUc
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
 }
 
-func NewClientsServer(cfg Config, usecases Usecases) *Server {
-	var server = &Server{
-		cfg:      cfg,
-		Usecases: usecases,
+type somePrivateInterface interface {
+	SomePublicMethod()
+}
+
+func NewGrpcSideServer(cfg Config, usecases requiredUsecases) *GrpcSideServer {
+	var server = &GrpcSideServer{
+		cfg:              cfg,
+		requiredUsecases: usecases,
 	}
 	var opts []grpc.ServerOption
 
@@ -42,7 +46,7 @@ func NewClientsServer(cfg Config, usecases Usecases) *Server {
 	return server
 }
 
-func (s *Server) Serve(ctx context.Context) error {
+func (s *GrpcSideServer) Serve(ctx context.Context) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %v", err)
@@ -56,7 +60,7 @@ func (s *Server) Serve(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) contextCancelHandler(ctx context.Context) {
+func (s *GrpcSideServer) contextCancelHandler(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		s.grpcServer.Stop()

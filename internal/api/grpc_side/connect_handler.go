@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-func (s *Server) Connect(connService pb.BaseService_ConnectServer) error {
+func (s *GrpcSideServer) Connect(connService pb.BaseService_ConnectServer) error {
 	var md = parseConnMetaData(connService.Context())
 	var input = model.CreateClientSession{ApiKey: md.ApiKey}
 	client, err := s.CreateClientSession(input)
@@ -64,7 +64,7 @@ func (s *Server) Connect(connService pb.BaseService_ConnectServer) error {
 	}
 }
 
-func (s *Server) createSession(input model.CreateClientSession) {
+func (s *GrpcSideServer) createSession(input model.CreateClientSession) {
 	s.CreateClientSession(input)
 }
 

@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
+func (s *HttpSideServer) createClientHandler(w http.ResponseWriter, r *http.Request) {
 	// парсирнг тела как json структуры
 	var input model.CreateClient
 	var name = r.PostFormValue("name")
@@ -38,7 +38,7 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
+func (s *HttpSideServer) getClientsHandler(w http.ResponseWriter, r *http.Request) {
 	err := s.executeTemplWithClientsTable(w)
 	if err != nil {
 		log.Printf("execute templ  with clients: %s\n", err)
@@ -47,7 +47,7 @@ func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
+func (s *HttpSideServer) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr, ok := vars["id"]
 	if !ok {
@@ -62,7 +62,7 @@ func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) index(w http.ResponseWriter, r *http.Request) {
+func (s *HttpSideServer) index(w http.ResponseWriter, r *http.Request) {
 	file, err := os.ReadFile("web/index.html")
 	if err != nil {
 		log.Printf("failed read index.html file\n")
@@ -72,7 +72,7 @@ func (s *Server) index(w http.ResponseWriter, r *http.Request) {
 	w.Write(file)
 }
 
-func (s *Server) executeTemplWithClientsTable(wr io.Writer) error {
+func (s *HttpSideServer) executeTemplWithClientsTable(wr io.Writer) error {
 	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
 
 	clients, err := s.ClientsList()

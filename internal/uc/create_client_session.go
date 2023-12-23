@@ -11,11 +11,11 @@ import (
 var _ usecase.CreateClientSessionUc = (*CreateClientSession)(nil)
 
 type CreateClientSession struct {
-	sessionRepo domain.ClientsSessionRepository
+	sessionRepo domain.ClientSessionsRepository
 	clientRepo  domain.ClientsRepository
 }
 
-func NewCreateClientSession(clientRepo domain.ClientsRepository, sessionRepo domain.ClientsSessionRepository) *CreateClientSession {
+func NewCreateClientSession(clientRepo domain.ClientsRepository, sessionRepo domain.ClientSessionsRepository) *CreateClientSession {
 	return &CreateClientSession{sessionRepo: sessionRepo, clientRepo: clientRepo}
 }
 

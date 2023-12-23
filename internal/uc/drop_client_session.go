@@ -9,10 +9,10 @@ import (
 var _ usecase.DropClientSessionUc = (*DropClientSession)(nil)
 
 type DropClientSession struct {
-	sessionsRepo domain.ClientsSessionRepository
+	sessionsRepo domain.ClientSessionsRepository
 }
 
-func NewDropClientSession(sessionsRepo domain.ClientsSessionRepository) *DropClientSession {
+func NewDropClientSession(sessionsRepo domain.ClientSessionsRepository) *DropClientSession {
 	return &DropClientSession{sessionsRepo: sessionsRepo}
 }
 

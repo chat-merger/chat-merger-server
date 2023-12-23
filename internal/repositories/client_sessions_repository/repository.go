@@ -6,10 +6,14 @@ import (
 	"errors"
 )
 
-var _ domain.ClientsSessionRepository = (*ClientSessionsRepositoryBase)(nil)
+var _ domain.ClientSessionsRepository = (*ClientSessionsRepositoryBase)(nil)
 
 type ClientSessionsRepositoryBase struct {
 	conns []connect
+}
+
+func NewClientSessionsRepositoryBase() *ClientSessionsRepositoryBase {
+	return &ClientSessionsRepositoryBase{}
 }
 
 func (c *ClientSessionsRepositoryBase) Send(msg model.Message, clientId model.ID) error {

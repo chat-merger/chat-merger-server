@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-type Server struct {
+type HttpSideServer struct {
 	sh *http.Server
-	Usecases
+	requiredUsecases
 }
 
 type Config struct {
@@ -21,14 +21,14 @@ type Config struct {
 	Port int
 }
 
-type Usecases struct {
+type requiredUsecases interface {
 	usecase.CreateClientUc
 	usecase.DeleteClientUc
 	usecase.ClientsListUc
 	usecase.ConnectedClientsListUc
 }
 
-func NewAdminPanelServer(cfg Config, usecases Usecases) *Server {
+func NewHttpSideServer(cfg Config, usecases requiredUsecases) *HttpSideServer {
 	var router = mux.NewRouter()
 
 	httpServer := &http.Server{
@@ -39,15 +39,15 @@ func NewAdminPanelServer(cfg Config, usecases Usecases) *Server {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	var adminServer = &Server{
-		sh:       httpServer,
-		Usecases: usecases,
+	var adminServer = &HttpSideServer{
+		sh:               httpServer,
+		requiredUsecases: usecases,
 	}
 	adminServer.registerHttpServerRoutes(router)
 	return adminServer
 }
 
-func (s *Server) Serve(ctx context.Context) error {
+func (s *HttpSideServer) Serve(ctx context.Context) error {
 	go s.contextCancelHandler(ctx)
 
 	if err := s.sh.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -56,14 +56,14 @@ func (s *Server) Serve(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) contextCancelHandler(ctx context.Context) {
+func (s *HttpSideServer) contextCancelHandler(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		s.sh.Shutdown(context.Background())
 	}
 }
 
-func (s *Server) registerHttpServerRoutes(router *mux.Router) {
+func (s *HttpSideServer) registerHttpServerRoutes(router *mux.Router) {
 
 	router.HandleFunc("/", s.index)
 
