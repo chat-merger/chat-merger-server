@@ -2,7 +2,9 @@ package main
 
 import (
 	"chatmerger/internal/app"
+	"chatmerger/internal/config"
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -12,17 +14,31 @@ import (
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.Ltime | log.Ldate)
-
+	cfg := initConfig()
 	ctx, cancel := context.WithCancel(context.Background())
 	go gracefulShutdown(cancel)
-	runApplication(ctx)
+	runApplication(ctx, cfg)
 }
 
-func runApplication(ctx context.Context) {
-	err := app.Run(ctx)
+func runApplication(ctx context.Context, cfg *config.Config) {
+	err := app.Run(ctx, cfg)
 	if err != nil {
 		log.Fatalf("application: %s", err)
 	}
+}
+
+func initConfig() *config.Config {
+	cfgFs := config.InitFlagSet()
+
+	cfg, err := cfgFs.Parse(os.Args[1:])
+	if err != nil {
+		log.Printf("config FlagSet initialization: %s", err)
+		if errors.Is(err, config.WrongArgumentError) {
+			cfgFs.FlagSetUsage()
+		}
+		os.Exit(2)
+	}
+	return cfg
 }
 
 func gracefulShutdown(cancel context.CancelFunc) {

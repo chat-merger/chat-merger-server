@@ -3,17 +3,17 @@ package app
 import (
 	"chatmerger/internal/api/grpc_side"
 	"chatmerger/internal/api/http_side"
-	. "chatmerger/internal/repositories/client_sessions_repository"
-	. "chatmerger/internal/repositories/clients_repository"
+	"chatmerger/internal/config"
+	csr "chatmerger/internal/repositories/client_sessions_repository"
+	cr "chatmerger/internal/repositories/clients_repository"
 	"chatmerger/internal/uc"
 	"context"
 	"fmt"
 	"log"
 )
 
-func Run(ctx context.Context) error {
-
-	repos, err := initRepositories()
+func Run(ctx context.Context, cfg *config.Config) error {
+	repos, err := initRepositories(cfg)
 	if err != nil {
 		return fmt.Errorf("create repositories: %s", err)
 	}
@@ -25,11 +25,11 @@ func Run(ctx context.Context) error {
 		},
 		httpSideCfg: http_side.Config{
 			Host: "localhost",
-			Port: 8081,
+			Port: cfg.HttpServerPort,
 		},
 		grpcSideCfg: grpc_side.Config{
 			Host: "localhost",
-			Port: 8080,
+			Port: cfg.GrpcServerPort,
 		},
 	}
 
@@ -58,10 +58,11 @@ func (a *application) runGrpcSideServer() {
 	}
 }
 
-func initRepositories() (*repositories, error) {
-
-	sessionsRepo := NewClientSessionsRepositoryBase()
-	clientsRepo, err := NewClientsRepositoryBase(Config{FilePath: "./clients.json"})
+func initRepositories(cfg *config.Config) (*repositories, error) {
+	sessionsRepo := csr.NewClientSessionsRepositoryBase()
+	clientsRepo, err := cr.NewClientsRepositoryBase(cr.Config{
+		FilePath: cfg.ClientsCfgFile,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("create clients repository: %s", err)
 	}
