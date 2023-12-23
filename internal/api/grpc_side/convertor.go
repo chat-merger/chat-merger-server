@@ -1,25 +1,26 @@
-package pb
+package grpc_side
 
 import (
+	"chatmerger/internal/api/pb"
 	"chatmerger/internal/domain/model"
 	"errors"
 	"log"
 	"time"
 )
 
-func RequestToCreateMessage(request *Request, client string) (*model.CreateMessage, error) {
+func requestToCreateMessage(request *pb.Request, client string) (*model.CreateMessage, error) {
 	var body model.Body
 	switch request.Body.(type) {
-	case *Request_Text:
-		var rt = request.Body.(*Request_Text).Text
+	case *pb.Request_Text:
+		var rt = request.Body.(*pb.Request_Text).Text
 		body = &model.BodyText{
-			Format: PbTextFormatToModel(rt.Format),
+			Format: pbTextFormatToModel(rt.Format),
 			Value:  rt.Value,
 		}
-	case *Request_Media:
-		var rm = request.Body.(*Request_Media).Media
+	case *pb.Request_Media:
+		var rm = request.Body.(*pb.Request_Media).Media
 		body = &model.BodyMedia{
-			Kind:    PbMediaTypeToModel(rm.Type),
+			Kind:    pbMediaTypeToModel(rm.Type),
 			Caption: rm.Caption,
 			Spoiler: rm.Spoiler,
 			Url:     rm.Url,
@@ -29,7 +30,7 @@ func RequestToCreateMessage(request *Request, client string) (*model.CreateMessa
 	}
 
 	return &model.CreateMessage{
-		ReplyId: StringToIdIfExists(request.ReplyMsgId),
+		ReplyId: stringToIdIfExists(request.ReplyMsgId),
 		Date:    time.Unix(request.CreatedAt, 0),
 		Author:  request.Author,
 		From:    client,
@@ -38,14 +39,14 @@ func RequestToCreateMessage(request *Request, client string) (*model.CreateMessa
 	}, nil
 }
 
-func MessageToResponse(msg model.Message) (*Response, error) {
+func messageToResponse(msg model.Message) (*pb.Response, error) {
 	var replyMsgId *string
 	if msg.ReplyId != nil {
 		id := msg.ReplyId.Value()
 		replyMsgId = &id
 	}
 	// response
-	response := &Response{
+	response := &pb.Response{
 		Id:         msg.Id.Value(),
 		ReplyMsgId: replyMsgId,
 		CreatedAt:  msg.Date.Unix(),
@@ -58,29 +59,29 @@ func MessageToResponse(msg model.Message) (*Response, error) {
 	switch msg.Body.(type) {
 	case *model.BodyText:
 		text := msg.Body.(*model.BodyText)
-		response.Body = ModelBodyTextToPb(*text)
+		response.Body = modelBodyTextToPb(*text)
 	case *model.BodyMedia:
 		media := msg.Body.(*model.BodyMedia)
-		response.Body = ModelBodyMediaToPb(*media)
+		response.Body = modelBodyMediaToPb(*media)
 	default:
 		log.Fatalf("unknown msg.Body:  %#v", msg.Body)
 	}
 	return response, nil
 }
 
-func ModelBodyTextToPb(bt model.BodyText) *Response_Text {
-	return &Response_Text{
-		Text: &Text{
-			Format: ModelTextFormatToPbTextFormat(bt.Format),
+func modelBodyTextToPb(bt model.BodyText) *pb.Response_Text {
+	return &pb.Response_Text{
+		Text: &pb.Text{
+			Format: modelTextFormatToPbTextFormat(bt.Format),
 			Value:  bt.Value,
 		},
 	}
 }
 
-func ModelBodyMediaToPb(bm model.BodyMedia) *Response_Media {
-	return &Response_Media{
-		Media: &Media{
-			Type:    ModelMediaTypeToPbMediaType(bm.Kind),
+func modelBodyMediaToPb(bm model.BodyMedia) *pb.Response_Media {
+	return &pb.Response_Media{
+		Media: &pb.Media{
+			Type:    modelMediaTypeToPbMediaType(bm.Kind),
 			Caption: bm.Caption,
 			Spoiler: bm.Spoiler,
 			Url:     bm.Url,
@@ -88,7 +89,7 @@ func ModelBodyMediaToPb(bm model.BodyMedia) *Response_Media {
 	}
 }
 
-func StringToIdIfExists(str *string) *model.ID {
+func stringToIdIfExists(str *string) *model.ID {
 	if str == nil {
 		return nil
 	}
@@ -96,58 +97,58 @@ func StringToIdIfExists(str *string) *model.ID {
 	return &id
 }
 
-func PbTextFormatToModel(format Text_Format) model.TextFormat {
+func pbTextFormatToModel(format pb.Text_Format) model.TextFormat {
 	var tf model.TextFormat
 	switch format {
-	case Text_MARKDOWN:
+	case pb.Text_MARKDOWN:
 		tf = model.Markdown
-	case Text_PLAIN:
+	case pb.Text_PLAIN:
 		tf = model.Plain
 	}
 	return tf
 }
 
-func PbMediaTypeToModel(kind Media_Type) model.MediaType {
+func pbMediaTypeToModel(kind pb.Media_Type) model.MediaType {
 	var tf model.MediaType
 	switch kind {
-	case Media_AUDIO:
+	case pb.Media_AUDIO:
 		tf = model.Audio
-	case Media_VIDEO:
+	case pb.Media_VIDEO:
 		tf = model.Video
-	case Media_FILE:
+	case pb.Media_FILE:
 		tf = model.File
-	case Media_PHOTO:
+	case pb.Media_PHOTO:
 		tf = model.Photo
-	case Media_STICKER:
+	case pb.Media_STICKER:
 		tf = model.Sticker
 	}
 	return tf
 }
 
-func ModelTextFormatToPbTextFormat(format model.TextFormat) Text_Format {
-	var tf Text_Format
+func modelTextFormatToPbTextFormat(format model.TextFormat) pb.Text_Format {
+	var tf pb.Text_Format
 	switch format {
 	case model.Markdown:
-		tf = Text_MARKDOWN
+		tf = pb.Text_MARKDOWN
 	case model.Plain:
-		tf = Text_PLAIN
+		tf = pb.Text_PLAIN
 	}
 	return tf
 }
 
-func ModelMediaTypeToPbMediaType(kind model.MediaType) Media_Type {
-	var tf Media_Type
+func modelMediaTypeToPbMediaType(kind model.MediaType) pb.Media_Type {
+	var tf pb.Media_Type
 	switch kind {
 	case model.Audio:
-		tf = Media_AUDIO
+		tf = pb.Media_AUDIO
 	case model.Video:
-		tf = Media_VIDEO
+		tf = pb.Media_VIDEO
 	case model.File:
-		tf = Media_FILE
+		tf = pb.Media_FILE
 	case model.Photo:
-		tf = Media_PHOTO
+		tf = pb.Media_PHOTO
 	case model.Sticker:
-		tf = Media_STICKER
+		tf = pb.Media_STICKER
 	}
 	return tf
 }

@@ -1,13 +1,15 @@
 package clients_repository
 
 import (
+	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 )
+
+var _ domain.ClientsRepository = (*ClientsRepositoryBase)(nil)
 
 type ClientsRepositoryBase struct {
 	clients []model.Client
@@ -15,16 +17,17 @@ type ClientsRepositoryBase struct {
 	mu      *sync.Mutex
 }
 
-func (c *ClientsRepositoryBase) GetClients() []model.Client {
-	return c.clients
+func (c *ClientsRepositoryBase) GetClients() ([]model.Client, error) {
+	return c.clients, nil
 }
 
-func (c *ClientsRepositoryBase) SetClients(clients []model.Client) {
+func (c *ClientsRepositoryBase) SetClients(clients []model.Client) error {
 	c.clients = clients
 	err := c.writeToConfig(fromDomain(clients))
 	if err != nil {
-		log.Fatalf("failed write clients: %s", err)
+		return fmt.Errorf("failed write clients: %s", err)
 	}
+	return nil
 }
 
 type Config struct {

@@ -1,4 +1,4 @@
-package admin
+package http_side
 
 import (
 	"chatmerger/internal/usecase"

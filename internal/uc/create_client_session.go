@@ -25,7 +25,10 @@ var (
 )
 
 func (c *CreateClientSession) CreateClientSession(input model.CreateClientSession) (*model.ClientSession, error) {
-	var clients = c.clientRepo.GetClients()
+	clients, err := c.clientRepo.GetClients()
+	if err != nil {
+		return nil, fmt.Errorf("getting client list: %s", err)
+	}
 	// apikey exists?
 	var expectedClient *model.Client
 	for _, client := range clients {
@@ -39,7 +42,7 @@ func (c *CreateClientSession) CreateClientSession(input model.CreateClientSessio
 		return nil, ErrorClientWithGivenApiKeyNotFound
 	}
 
-	var sessions, err = c.sessionRepo.Connected()
+	sessions, err := c.sessionRepo.Connected()
 	if err != nil {
 		return nil, fmt.Errorf("call sessions connected list getter failed: %s", err)
 	}

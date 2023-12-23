@@ -1,6 +1,7 @@
-package pb
+package grpc_side
 
 import (
+	"chatmerger/internal/api/pb"
 	"chatmerger/internal/domain/model"
 	"chatmerger/internal/rule"
 	"context"
@@ -10,7 +11,7 @@ import (
 	"log"
 )
 
-func (s *Server) Connect(connService BaseService_ConnectServer) error {
+func (s *Server) Connect(connService pb.BaseService_ConnectServer) error {
 	var md = parseConnMetaData(connService.Context())
 	var input = model.CreateClientSession{ApiKey: md.ApiKey}
 	client, err := s.CreateClientSession(input)
@@ -26,7 +27,7 @@ func (s *Server) Connect(connService BaseService_ConnectServer) error {
 					log.Printf("failed to read channel of client %#v", client)
 					return
 				} else {
-					response, err := MessageToResponse(msg)
+					response, err := messageToResponse(msg)
 					if err != nil {
 						log.Printf("failed convert msg to respponse: %s", err)
 					}
@@ -51,7 +52,7 @@ func (s *Server) Connect(connService BaseService_ConnectServer) error {
 			return err
 		}
 		//resp, err := transform(r, client.Name)
-		msg, err := RequestToCreateMessage(r, client.Name)
+		msg, err := requestToCreateMessage(r, client.Name)
 		if err != nil {
 			log.Printf("transform request to response: %v", err)
 			continue
@@ -82,30 +83,3 @@ func parseConnMetaData(ctx context.Context) metaData {
 		ApiKey: apiKey,
 	}
 }
-
-//
-//func transform(request *Request, client string) (*Response, error) {
-//	var body isResponse_Body
-//	switch request.Body.(type) {
-//	case *Request_Text:
-//		body = &Response_Text{
-//			Text: request.Body.(*Request_Text).Text,
-//		}
-//	case *Request_Media:
-//		body = &Response_Media{
-//			Media: request.Body.(*Request_Media).Media,
-//		}
-//	default:
-//		return nil, errors.New("request body not match with RequestBody interface")
-//	}
-//	var resp = &Response{
-//		Id:         uuid.NewString(),
-//		ReplyMsgId: request.ReplyMsgId,
-//		CreatedAt:  request.CreatedAt,
-//		Author:     request.Author,
-//		Client:     client,
-//		IsSilent:   request.IsSilent,
-//		Body:       body,
-//	}
-//	return resp, nil
-//}

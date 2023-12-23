@@ -1,6 +1,7 @@
-package pb
+package grpc_side
 
 import (
+	"chatmerger/internal/api/pb"
 	"chatmerger/internal/usecase"
 	"context"
 	"fmt"
@@ -8,12 +9,13 @@ import (
 	"net"
 )
 
-var _ BaseServiceServer = (*Server)(nil)
+var _ pb.BaseServiceServer = (*Server)(nil)
 
 type Server struct {
 	cfg        Config
 	grpcServer *grpc.Server
 	Usecases
+	pb.UnimplementedBaseServiceServer
 }
 
 type Config struct {
@@ -35,12 +37,10 @@ func NewClientsServer(cfg Config, usecases Usecases) *Server {
 	var opts []grpc.ServerOption
 
 	server.grpcServer = grpc.NewServer(opts...)
-	RegisterBaseServiceServer(server.grpcServer, server)
+	pb.RegisterBaseServiceServer(server.grpcServer, server)
 
 	return server
 }
-
-func (s *Server) mustEmbedUnimplementedBaseServiceServer() {}
 
 func (s *Server) Serve(ctx context.Context) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))

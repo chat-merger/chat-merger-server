@@ -17,5 +17,5 @@ func NewClientsList(clientsRepos domain.ClientsRepository) *ClientsList {
 }
 
 func (r *ClientsList) ClientsList() ([]model.Client, error) {
-	return r.clientsRepos.GetClients(), nil
+	return r.clientsRepos.GetClients()
 }

@@ -1,8 +1,8 @@
 package app
 
 import (
-	adm "chatmerger/internal/api/admin"
-	"chatmerger/internal/api/pb"
+	"chatmerger/internal/api/grpc_side"
+	adm "chatmerger/internal/api/http_side"
 	"chatmerger/internal/domain"
 	. "chatmerger/internal/repositories/client_sessions_repository"
 	. "chatmerger/internal/repositories/clients_repository"
@@ -10,18 +10,6 @@ import (
 	"chatmerger/internal/usecase"
 	"context"
 	"log"
-)
-
-type State uint8
-
-const (
-	Working State = iota
-	Running
-	Stopping
-	Stopped
-	RunningFailure
-	StoppingFailure
-	InternalError
 )
 
 type application struct {
@@ -44,7 +32,6 @@ type Usecases struct {
 
 // use for graceful shutdown
 func (a *application) shutdown() {
-	// todo: a.changeStatus(Stopping)
 	cc, err := a.sessionRepository.Connected()
 	if err == nil {
 		for _, client := range cc {
@@ -72,12 +59,12 @@ func Run(ctx context.Context) error {
 	}
 
 	// create and run clients api handler
-	var clientsApiHandler = pb.NewClientsServer(
-		pb.Config{
+	var clientsApiHandler = grpc_side.NewClientsServer(
+		grpc_side.Config{
 			Host: "localhost",
 			Port: 8080,
 		},
-		pb.Usecases{
+		grpc_side.Usecases{
 			CreateAndSendMsgToEveryoneExceptUc: usecases,
 			CreateClientSessionUc:              usecases,
 			DropClientSessionUc:                usecases,
@@ -100,13 +87,14 @@ func Run(ctx context.Context) error {
 	)
 	go serveHandler(adminPanelApiHandler, ctx)
 
-	// todo:
-	var _ = &application{
+	var app = &application{
 		clientRepository:  clientsRepo,
 		sessionRepository: sessionsRepo,
 		apiHandler:        clientsApiHandler,
 		adminHandler:      adminPanelApiHandler,
 	}
+
+	go app.contextCancelHandler(ctx)
 
 	return nil
 }

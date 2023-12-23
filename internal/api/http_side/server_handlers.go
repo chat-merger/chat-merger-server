@@ -1,4 +1,4 @@
-package admin
+package http_side
 
 import (
 	"chatmerger/internal/domain/model"
@@ -33,7 +33,7 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = s.executeTemplWithClientsTable(w)
 	if err != nil {
-		log.Fatalf("execute templ  with clients: %s", err)
+		log.Printf("execute templ  with clients: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -42,7 +42,7 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
 	err := s.executeTemplWithClientsTable(w)
 	if err != nil {
-		log.Fatalf("execute templ  with clients: %s", err)
+		log.Printf("execute templ  with clients: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

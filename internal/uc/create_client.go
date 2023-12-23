@@ -4,6 +4,7 @@ import (
 	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
 	"chatmerger/internal/usecase"
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -23,8 +24,13 @@ func (r *CreateClient) CreateClient(input model.CreateClient) error {
 		Name:   input.Name,
 		ApiKey: model.NewApiKey(uuid.New().String()),
 	}
-	var clients = r.clientRepos.GetClients()
-	r.clientRepos.SetClients(append(clients, newClient))
-
+	clients, err := r.clientRepos.GetClients()
+	if err != nil {
+		return fmt.Errorf("getting client list: %s", err)
+	}
+	err = r.clientRepos.SetClients(append(clients, newClient))
+	if err != nil {
+		return fmt.Errorf("setting clients list: %s", err)
+	}
 	return nil
 }
