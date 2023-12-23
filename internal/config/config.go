@@ -45,8 +45,8 @@ const (
 	flagNameClientsCfg = "clients-cfg"
 )
 
-// FlagSetUsage printing "how usage flags" message
-func (c *FlagSet) FlagSetUsage() { c.fs.Usage() }
+// Usage printing "how usage flags" message
+func (c *FlagSet) Usage() { c.fs.Usage() }
 
 // Parse is Config factory method
 func (c *FlagSet) Parse(args []string) (*Config, error) {

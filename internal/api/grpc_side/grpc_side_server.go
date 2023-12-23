@@ -51,7 +51,7 @@ func (s *GrpcSideServer) Serve(ctx context.Context) error {
 	go s.contextCancelHandler(ctx)
 
 	if err = s.grpcServer.Serve(lis); err != nil {
-		return fmt.Errorf("failed to server grpc serfver: %v", err)
+		return fmt.Errorf("failed to server grpc server: %v", err)
 	}
 	return nil
 }

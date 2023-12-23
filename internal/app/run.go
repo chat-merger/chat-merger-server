@@ -3,6 +3,7 @@ package app
 import (
 	"chatmerger/internal/api/grpc_side"
 	"chatmerger/internal/api/http_side"
+	"chatmerger/internal/common/msgs"
 	"chatmerger/internal/config"
 	csr "chatmerger/internal/repositories/client_sessions_repository"
 	cr "chatmerger/internal/repositories/clients_repository"
@@ -17,10 +18,15 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("create repositories: %s", err)
 	}
+	log.Println(msgs.RepositoriesCreated)
+
+	var usecases = newUsecases(*repos)
+	log.Println(msgs.UsecasesCreated)
 
 	var app = &application{
+		errCh: make(chan error),
 		commonDeps: commonDeps{
-			usecases: newUsecases(*repos),
+			usecases: usecases,
 			ctx:      ctx,
 		},
 		httpSideCfg: http_side.Config{
@@ -38,23 +44,35 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	// crate and run admin panel api handler
 	go app.runHttpSideServer()
 
-	<-ctx.Done()
-	return nil
+	log.Println(msgs.ApplicationStarted)
+	select {
+	case <-ctx.Done():
+		log.Println(msgs.ApplicationReceiveCtxDone)
+		return nil
+	case err := <-app.errCh:
+		return err
+	}
 }
 
 func (a *application) runHttpSideServer() {
+	log.Println(msgs.RunHttpSideServer)
 	h := http_side.NewHttpSideServer(a.httpSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
-	if err != nil {
-		log.Fatalf("http side server serve: %s", err)
+	err = fmt.Errorf("http side server serve: %s", err)
+	select {
+	case a.errCh <- err:
+	default:
 	}
 }
 
 func (a *application) runGrpcSideServer() {
+	log.Println(msgs.RunGrpcSideServer)
 	h := grpc_side.NewGrpcSideServer(a.grpcSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
-	if err != nil {
-		log.Fatalf("grpc side server serve: %s", err)
+	err = fmt.Errorf("grpc side server serve: %s", err)
+	select {
+	case a.errCh <- err:
+	default:
 	}
 }
 

@@ -12,6 +12,7 @@ type application struct {
 	commonDeps
 	httpSideCfg http_side.Config
 	grpcSideCfg grpc_side.Config
+	errCh       chan error
 }
 
 type commonDeps struct {

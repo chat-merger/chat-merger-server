@@ -2,8 +2,9 @@ package grpc_side
 
 import (
 	"chatmerger/internal/api/pb"
+	"chatmerger/internal/common/msgs"
+	"chatmerger/internal/common/vals"
 	"chatmerger/internal/domain/model"
-	"chatmerger/internal/rule"
 	"context"
 	"fmt"
 	"google.golang.org/grpc/metadata"
@@ -13,11 +14,13 @@ import (
 
 func (s *GrpcSideServer) Connect(connService pb.BaseService_ConnectServer) error {
 	var md = parseConnMetaData(connService.Context())
+	log.Printf("%s: %+v", msgs.ClientConnectedToServer, md)
 	var input = model.CreateClientSession{ApiKey: md.ApiKey}
 	client, err := s.CreateClientSession(input)
 	if err != nil {
 		return fmt.Errorf("failed create client session: %s", err)
 	}
+	log.Printf("%s: %+v", msgs.ClientSessionCreated, client)
 	//  when need send msg from some other clients to current connect
 	go func() {
 		for {
@@ -64,17 +67,13 @@ func (s *GrpcSideServer) Connect(connService pb.BaseService_ConnectServer) error
 	}
 }
 
-func (s *GrpcSideServer) createSession(input model.CreateClientSession) {
-	s.CreateClientSession(input)
-}
-
 type metaData struct {
 	ApiKey model.ApiKey
 }
 
 func parseConnMetaData(ctx context.Context) metaData {
 	var md, _ = metadata.FromIncomingContext(ctx)
-	var apiKeyRaw = md.Get(rule.AUTHENTICATE_HEADER)
+	var apiKeyRaw = md.Get(vals.AUTHENTICATE_HEADER)
 	var apiKey model.ApiKey
 	if len(apiKeyRaw) > 0 {
 		apiKey = model.NewApiKey(apiKeyRaw[0])
