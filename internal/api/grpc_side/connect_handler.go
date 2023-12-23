@@ -24,16 +24,16 @@ func (s *Server) Connect(connService pb.BaseService_ConnectServer) error {
 			select {
 			case msg, ok := <-client.MsgCh:
 				if !ok {
-					log.Printf("failed to read channel of client %#v", client)
+					log.Printf("failed to read channel of client %#v\n", client)
 					return
 				} else {
 					response, err := messageToResponse(msg)
 					if err != nil {
-						log.Printf("failed convert msg to respponse: %s", err)
+						log.Printf("failed convert msg to respponse: %s\n", err)
 					}
 					err = connService.Send(response)
 					if err != nil {
-						log.Printf("failed send response to client (%s): %s", client.Name, err)
+						log.Printf("failed send response to client (%s): %s\n", client.Name, err)
 					}
 				}
 			}
@@ -48,18 +48,18 @@ func (s *Server) Connect(connService pb.BaseService_ConnectServer) error {
 				log.Println("err == io.EOF")
 				return nil
 			}
-			log.Printf("recv op err: %v", err)
+			log.Printf("recv op err: %v\n", err)
 			return err
 		}
 		//resp, err := transform(r, client.Name)
 		msg, err := requestToCreateMessage(r, client.Name)
 		if err != nil {
-			log.Printf("transform request to response: %v", err)
+			log.Printf("transform request to response: %v\n", err)
 			continue
 		}
 		err = s.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{client.Id})
 		if err != nil {
-			log.Printf("send msg to clients: %v", err)
+			log.Printf("send msg to clients: %v\n", err)
 		}
 	}
 }

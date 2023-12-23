@@ -21,19 +21,18 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		input = model.CreateClient{Name: name}
 	}
-	log.Printf("body: %#v", input)
 	// создание клиента через юзкейс
 	err := s.CreateClient(input)
 	if err != nil {
 		log.Println(err)
-		log.Printf("err = s.CreateClient(input) err: %s", err)
+		log.Printf("err = s.CreateClient(input) err: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	err = s.executeTemplWithClientsTable(w)
 	if err != nil {
-		log.Printf("execute templ  with clients: %s", err)
+		log.Printf("execute templ  with clients: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -42,7 +41,7 @@ func (s *Server) createClientHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getClientsHandler(w http.ResponseWriter, r *http.Request) {
 	err := s.executeTemplWithClientsTable(w)
 	if err != nil {
-		log.Printf("execute templ  with clients: %s", err)
+		log.Printf("execute templ  with clients: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -66,7 +65,7 @@ func (s *Server) deleteClientHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) index(w http.ResponseWriter, r *http.Request) {
 	file, err := os.ReadFile("web/index.html")
 	if err != nil {
-		log.Printf("failed read index.html file")
+		log.Printf("failed read index.html file\n")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

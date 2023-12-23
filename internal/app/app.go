@@ -2,7 +2,7 @@ package app
 
 import (
 	"chatmerger/internal/api/grpc_side"
-	adm "chatmerger/internal/api/http_side"
+	"chatmerger/internal/api/http_side"
 	"chatmerger/internal/domain"
 	. "chatmerger/internal/repositories/client_sessions_repository"
 	. "chatmerger/internal/repositories/clients_repository"
@@ -15,8 +15,8 @@ import (
 type application struct {
 	clientRepository  domain.ClientsRepository
 	sessionRepository domain.ClientsSessionRepository
-	apiHandler        domain.Handler
-	adminHandler      domain.Handler
+	grpcHandler       domain.Handler
+	httpHandler       domain.Handler
 	usecases          *Usecases
 }
 
@@ -28,16 +28,6 @@ type Usecases struct {
 	usecase.ConnectedClientsListUc
 	usecase.CreateClientUc
 	usecase.DeleteClientUc
-}
-
-// use for graceful shutdown
-func (a *application) shutdown() {
-	cc, err := a.sessionRepository.Connected()
-	if err == nil {
-		for _, client := range cc {
-			a.sessionRepository.Disconnect(client.Id)
-		}
-	}
 }
 
 func Run(ctx context.Context) error {
@@ -59,7 +49,7 @@ func Run(ctx context.Context) error {
 	}
 
 	// create and run clients api handler
-	var clientsApiHandler = grpc_side.NewClientsServer(
+	var grpcHandler = grpc_side.NewClientsServer(
 		grpc_side.Config{
 			Host: "localhost",
 			Port: 8080,
@@ -70,45 +60,51 @@ func Run(ctx context.Context) error {
 			DropClientSessionUc:                usecases,
 		},
 	)
-	go serveHandler(clientsApiHandler, ctx)
+	go serveHandler(grpcHandler, ctx)
 
 	// crate and run admin panel api handler
-	var adminPanelApiHandler = adm.NewAdminPanelServer(
-		adm.Config{
+	var httpHandler = http_side.NewAdminPanelServer(
+		http_side.Config{
 			Host: "localhost",
 			Port: 8081,
 		},
-		adm.Usecases{
+		http_side.Usecases{
 			CreateClientUc:         usecases,
 			DeleteClientUc:         usecases,
 			ClientsListUc:          usecases,
 			ConnectedClientsListUc: usecases,
 		},
 	)
-	go serveHandler(adminPanelApiHandler, ctx)
+	go serveHandler(httpHandler, ctx)
 
 	var app = &application{
 		clientRepository:  clientsRepo,
 		sessionRepository: sessionsRepo,
-		apiHandler:        clientsApiHandler,
-		adminHandler:      adminPanelApiHandler,
+		grpcHandler:       grpcHandler,
+		httpHandler:       httpHandler,
 	}
 
-	go app.contextCancelHandler(ctx)
-
+	<-ctx.Done()
+	app.shutdown()
 	return nil
-}
-
-func (a *application) contextCancelHandler(ctx context.Context) {
-	select {
-	case <-ctx.Done():
-		a.shutdown()
-	}
 }
 
 func serveHandler(h domain.Handler, ctx context.Context) {
 	err := h.Serve(ctx)
 	if err != nil {
 		log.Fatalf("handler serve: %s", err)
+	}
+}
+
+// use for graceful shutdown
+func (a *application) shutdown() {
+	cc, err := a.sessionRepository.Connected()
+	if err == nil {
+		for _, client := range cc {
+			err := a.sessionRepository.Disconnect(client.Id)
+			if err != nil {
+				log.Printf("session disconnect: %s\n", err)
+			}
+		}
 	}
 }
