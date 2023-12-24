@@ -13,57 +13,26 @@ import (
 )
 
 func (s *GrpcSideServer) Connect(connService pb.BaseService_ConnectServer) error {
+	//return errors.ErrUnsupported
 	var md = parseConnMetaData(connService.Context())
 	log.Printf("%s: %+v", msgs.ClientConnectedToServer, md)
 	var input = model.CreateClientSession{ApiKey: md.ApiKey}
-	client, err := s.CreateClientSession(input)
+	clientSession, err := s.CreateClientSession(input)
 	if err != nil {
-		return fmt.Errorf("failed create client session: %s", err)
+		return fmt.Errorf("failed create clientSession session: %s", err)
 	}
-	log.Printf("%s: %+v", msgs.ClientSessionCreated, client)
+	errCh := make(chan error)
+	log.Printf("%s: %+v", msgs.ClientSessionCreated, clientSession)
 	//  when need send msg from some other clients to current connect
-	go func() {
-		for {
-			select {
-			case msg, ok := <-client.MsgCh:
-				if !ok {
-					log.Printf("failed to read channel of client %#v\n", client)
-					return
-				} else {
-					response, err := messageToResponse(msg)
-					if err != nil {
-						log.Printf("failed convert msg to respponse: %s\n", err)
-					}
-					err = connService.Send(response)
-					if err != nil {
-						log.Printf("failed send response to client (%s): %s\n", client.Name, err)
-					}
-				}
-			}
-		}
-	}()
+	go handleSessionReceivedMsgs(connService, clientSession, errCh)
 	// read clients input msg and fanout to other clients
-	for {
-		r, err := connService.Recv()
-		if err != nil {
-			s.DropClientSession([]model.ID{client.Id})
-			if err == io.EOF {
-				log.Println("err == io.EOF")
-				return nil
-			}
-			log.Printf("recv op err: %v\n", err)
-			return err
-		}
-		//resp, err := transform(r, client.Name)
-		msg, err := requestToCreateMessage(r, client.Name)
-		if err != nil {
-			log.Printf("transform request to response: %v\n", err)
-			continue
-		}
-		err = s.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{client.Id})
-		if err != nil {
-			log.Printf("send msg to clients: %v\n", err)
-		}
+	go handleMessagesFromClient(connService, clientSession, errCh, s.requiredUsecases)
+
+	select {
+	case <-connService.Context().Done():
+		return nil
+	case err := <-errCh:
+		return err
 	}
 }
 
@@ -80,5 +49,56 @@ func parseConnMetaData(ctx context.Context) metaData {
 	}
 	return metaData{
 		ApiKey: apiKey,
+	}
+}
+
+func handleMessagesFromClient(connService pb.BaseService_ConnectServer, clientSession *model.ClientSession, errCh chan<- error, usecases requiredUsecases) {
+	for {
+		r, err := connService.Recv()
+		if err != nil {
+			usecases.DropClientSession([]model.ID{clientSession.Id})
+			if err == io.EOF {
+				log.Println(msgs.ClientSessionCloseConnection)
+				return
+			}
+
+			errCh <- fmt.Errorf("recv op err: %v\n", err)
+			return
+		}
+		log.Println(msgs.NewMessageFromClient)
+		msg, err := requestToCreateMessage(r, clientSession.Name)
+		if err != nil {
+			errCh <- fmt.Errorf("transform request to response: %v\n", err)
+			continue
+		}
+		err = usecases.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{clientSession.Id})
+		if err != nil {
+			errCh <- fmt.Errorf("send msg to clients: %v\n", err)
+		}
+	}
+}
+
+func handleSessionReceivedMsgs(connService pb.BaseService_ConnectServer, session *model.ClientSession, errCh chan<- error) {
+	for {
+		select {
+		case <-connService.Context().Done():
+			return
+		case msg, ok := <-session.MsgCh:
+			if !ok {
+				errCh <- fmt.Errorf("failed to read channel of client session %#v\n", session)
+				return
+			} else {
+				response, err := messageToResponse(msg)
+				if err != nil {
+					errCh <- fmt.Errorf("failed convert msg to respponse: %s\n", err)
+					return
+				}
+				err = connService.Send(response)
+				if err != nil {
+					errCh <- fmt.Errorf("failed send response to client session (%s): %s\n", session.Name, err)
+					return
+				}
+			}
+		}
 	}
 }

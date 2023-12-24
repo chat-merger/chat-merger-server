@@ -18,9 +18,11 @@ const (
 	ApplicationReceiveCtxDone = "Application receive ctx.Done signal"
 
 	// Grpc server
-	RunGrpcSideServer       = "Run Grpc Side Server"
-	ClientConnectedToServer = "Client Connected To Server"
-	ClientSessionCreated    = "Client Session Created"
+	RunGrpcSideServer            = "Run Grpc Side Server"
+	ClientConnectedToServer      = "Client Connected To Server"
+	ClientSessionCreated         = "Client Session Created"
+	ClientSessionCloseConnection = "ClientSessionCloseConnection"
+	NewMessageFromClient         = "NewMessageFromClient"
 
 	// http server
 	RunHttpSideServer = "Run Http Side Server"
