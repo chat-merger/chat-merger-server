@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 )
 
 func Run(ctx context.Context, cfg *config.Config) error {
@@ -48,6 +49,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	select {
 	case <-ctx.Done():
 		log.Println(msgs.ApplicationReceiveCtxDone)
+		time.Sleep(time.Second)
 		return nil
 	case err := <-app.errCh:
 		return err
@@ -58,20 +60,25 @@ func (a *application) runHttpSideServer() {
 	log.Println(msgs.RunHttpSideServer)
 	h := http_side.NewHttpSideServer(a.httpSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
-	err = fmt.Errorf("http side server serve: %s", err)
-	select {
-	case a.errCh <- err:
-	default:
+	if err != nil {
+		a.errorf("http side server serve: %s", err)
 	}
+	log.Println(msgs.StoppedHttpSideServer)
 }
 
 func (a *application) runGrpcSideServer() {
 	log.Println(msgs.RunGrpcSideServer)
 	h := grpc_side.NewGrpcSideServer(a.grpcSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
-	err = fmt.Errorf("grpc side server serve: %s", err)
+	if err != nil {
+		a.errorf("grpc side server serve: %s", err)
+	}
+	log.Println(msgs.StoppedGrpcSideServer)
+}
+
+func (a *application) errorf(format string, args ...any) {
 	select {
-	case a.errCh <- err:
+	case a.errCh <- fmt.Errorf(format, args):
 	default:
 	}
 }

@@ -45,10 +45,9 @@ func NewGrpcSideServer(cfg Config, usecases requiredUsecases) *GrpcSideServer {
 func (s *GrpcSideServer) Serve(ctx context.Context) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))
 	if err != nil {
-		return fmt.Errorf("failed to listen: %v", err)
+		return fmt.Errorf("create listener: %v", err)
 	}
-
-	go s.contextCancelHandler(ctx)
+	go ctxHandler(ctx, s.grpcServer.Stop)
 
 	if err = s.grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to server grpc server: %v", err)
@@ -56,9 +55,9 @@ func (s *GrpcSideServer) Serve(ctx context.Context) error {
 	return nil
 }
 
-func (s *GrpcSideServer) contextCancelHandler(ctx context.Context) {
+func ctxHandler(ctx context.Context, callback func()) {
 	select {
 	case <-ctx.Done():
-		s.grpcServer.Stop()
+		callback()
 	}
 }

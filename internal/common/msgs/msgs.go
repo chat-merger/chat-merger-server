@@ -19,13 +19,15 @@ const (
 
 	// Grpc server
 	RunGrpcSideServer            = "Run Grpc Side Server"
+	StoppedGrpcSideServer        = "StoppedGrpcSideServer"
 	ClientConnectedToServer      = "Client Connected To Server"
 	ClientSessionCreated         = "Client Session Created"
 	ClientSessionCloseConnection = "ClientSessionCloseConnection"
 	NewMessageFromClient         = "NewMessageFromClient"
 
 	// http server
-	RunHttpSideServer = "Run Http Side Server"
+	RunHttpSideServer     = "Run Http Side Server"
+	StoppedHttpSideServer = "StoppedHttpSideServer"
 )
 
 var (
