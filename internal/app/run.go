@@ -11,34 +11,20 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 )
 
 func Run(ctx context.Context, cfg *config.Config) error {
 	repos, err := initRepositories(cfg)
 	if err != nil {
-		return fmt.Errorf("create repositories: %s", err)
+		return fmt.Errorf("init repositories: %s", err)
 	}
-	log.Println(msgs.RepositoriesCreated)
+	log.Println(msgs.RepositoriesInitialized)
 
-	var usecases = newUsecases(*repos)
+	var usecases = newUsecases(repos)
 	log.Println(msgs.UsecasesCreated)
 
-	var app = &application{
-		errCh: make(chan error),
-		commonDeps: commonDeps{
-			usecases: usecases,
-			ctx:      ctx,
-		},
-		httpSideCfg: http_side.Config{
-			Host: "localhost",
-			Port: cfg.HttpServerPort,
-		},
-		grpcSideCfg: grpc_side.Config{
-			Host: "localhost",
-			Port: cfg.GrpcServerPort,
-		},
-	}
+	deps := commonDeps{usecases: usecases, ctx: ctx}
+	app, errCh := newApplication(deps, cfg)
 
 	// create and run clients api handler
 	go app.runGrpcSideServer()
@@ -46,17 +32,26 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	go app.runHttpSideServer()
 
 	log.Println(msgs.ApplicationStarted)
+
+	return app.gracefulShutdownApplication(errCh)
+}
+
+func (a *application) gracefulShutdownApplication(errCh <-chan error) error {
+	var err error
 	select {
-	case <-ctx.Done():
+	case <-a.ctx.Done():
 		log.Println(msgs.ApplicationReceiveCtxDone)
-		time.Sleep(time.Second)
-		return nil
-	case err := <-app.errCh:
-		return err
+	case err = <-errCh:
+		a.cancelFunc()
+		log.Println(msgs.ApplicationReceiveInternalError)
 	}
+	a.wg.Wait()
+	return err
 }
 
 func (a *application) runHttpSideServer() {
+	a.wg.Add(1)
+	defer a.wg.Done()
 	log.Println(msgs.RunHttpSideServer)
 	h := http_side.NewHttpSideServer(a.httpSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
@@ -67,6 +62,8 @@ func (a *application) runHttpSideServer() {
 }
 
 func (a *application) runGrpcSideServer() {
+	a.wg.Add(1)
+	defer a.wg.Done()
 	log.Println(msgs.RunGrpcSideServer)
 	h := grpc_side.NewGrpcSideServer(a.grpcSideCfg, a.usecases)
 	err := h.Serve(a.ctx)
@@ -98,7 +95,7 @@ func initRepositories(cfg *config.Config) (*repositories, error) {
 
 }
 
-func newUsecases(repos repositories) *usecasesImpls {
+func newUsecases(repos *repositories) *usecasesImpls {
 	return &usecasesImpls{
 		ConnectedClientsListUc: uc.NewConnectedClientsList(repos.sessionsRepo),
 		// clients api server

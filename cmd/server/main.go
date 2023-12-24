@@ -20,8 +20,8 @@ func main() {
 	cfg := initConfig()
 	log.Println(msgs.ConfigInitialized)
 	ctx, cancel := context.WithCancel(context.Background())
-	go gracefulShutdown(cancel)
-	runApplication(ctx, cfg)
+	go runApplication(ctx, cfg)
+	gracefulShutdown(cancel)
 }
 
 func runApplication(ctx context.Context, cfg *config.Config) {
@@ -30,6 +30,7 @@ func runApplication(ctx context.Context, cfg *config.Config) {
 	if err != nil {
 		log.Fatalf("application: %s", err)
 	}
+	os.Exit(0)
 }
 
 func initConfig() *config.Config {

@@ -11,11 +11,12 @@ const (
 	ConfigInitialized = "Config Initialized"
 
 	// application
-	ApplicationStart          = "Start Application"
-	ApplicationStarted        = "Application start is over, waiting when ctx done"
-	UsecasesCreated           = "Usecases Created"
-	RepositoriesCreated       = "Repositories Created"
-	ApplicationReceiveCtxDone = "Application receive ctx.Done signal"
+	ApplicationStart                = "Start Application"
+	ApplicationStarted              = "Application start is over, waiting when ctx done"
+	UsecasesCreated                 = "Usecases Created"
+	RepositoriesInitialized         = "RepositoriesInitialized"
+	ApplicationReceiveCtxDone       = "Application receive ctx.Done signal"
+	ApplicationReceiveInternalError = "ApplicationReceiveInternalError"
 
 	// Grpc server
 	RunGrpcSideServer            = "Run Grpc Side Server"
@@ -31,5 +32,5 @@ const (
 )
 
 var (
-	ProgramWillForceExit = fmt.Sprintf("after %v seconds, the program will force exit\n", vals.GracefulShutdownTimeout.Seconds())
+	ProgramWillForceExit = fmt.Sprintf("after %v seconds, the program will force exit", vals.GracefulShutdownTimeout.Seconds())
 )
