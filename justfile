@@ -16,7 +16,14 @@ generated_pb_package_destination := "./internal/api"
 # build settings:
 build_output_file_or_directory := "./bin/server"
 
-default: build
+default: run
+
+run:
+    go run ./cmd/server/main.go \
+    -clients-cfg ./clients.json \
+    -grpc-port 32256 \
+    -http-port 32255
+
 
 build *FLAGS:
     go build -o {{build_output_file_or_directory}} {{FLAGS}}  ./cmd/server/main.go

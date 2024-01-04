@@ -24,8 +24,8 @@ type FlagSet struct {
 func InitFlagSet() *FlagSet {
 	cfgFs := new(FlagSet)
 	cfgFs.fs = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
-	cfgFs.fs.IntVar(&cfgFs.cfg.GrpcServerPort, flagNameGrpcPort, 0, "port for HTTP server (admin web site)")
-	cfgFs.fs.IntVar(&cfgFs.cfg.HttpServerPort, flagNameHttpPort, 0, "port for gGRPC server (clients api)")
+	cfgFs.fs.IntVar(&cfgFs.cfg.GrpcServerPort, flagNameGrpcPort, 0, "port for gGRPC server (clients api)")
+	cfgFs.fs.IntVar(&cfgFs.cfg.HttpServerPort, flagNameHttpPort, 0, "port for HTTP server (admin web site)")
 	cfgFs.fs.StringVar(&cfgFs.cfg.ClientsCfgFile, flagNameClientsCfg, "", "file with clients settings")
 	return cfgFs
 }

@@ -19,16 +19,20 @@ const (
 	ApplicationReceiveInternalError = "ApplicationReceiveInternalError"
 
 	// Grpc server
-	RunGrpcSideServer            = "Run Grpc Side Server"
-	StoppedGrpcSideServer        = "StoppedGrpcSideServer"
+	RunGrpcController            = "RunGrpcController"
+	StoppedGrpcController        = "StoppedGrpcController"
 	ClientConnectedToServer      = "Client Connected To Server"
 	ClientSessionCreated         = "Client Session Created"
 	ClientSessionCloseConnection = "ClientSessionCloseConnection"
 	NewMessageFromClient         = "NewMessageFromClient"
 
 	// http server
-	RunHttpSideServer     = "Run Http Side Server"
-	StoppedHttpSideServer = "StoppedHttpSideServer"
+	RunHttpController     = "RunHttpController"
+	StoppedHttpController = "StoppedHttpController"
+
+	//  controller
+	RunController     = "Run Controller"
+	StoppedController = "Stopped Controller"
 )
 
 var (

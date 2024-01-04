@@ -1,13 +1,14 @@
 package app
 
 import (
-	"chatmerger/internal/api/grpc_side"
-	"chatmerger/internal/api/http_side"
 	"chatmerger/internal/common/msgs"
 	"chatmerger/internal/config"
-	csr "chatmerger/internal/repositories/client_sessions_repository"
-	cr "chatmerger/internal/repositories/clients_repository"
-	"chatmerger/internal/uc"
+	"chatmerger/internal/data/api/grpc_side"
+	"chatmerger/internal/data/api/http_side"
+	csr "chatmerger/internal/data/repositories/client_sessions_repository"
+	cr "chatmerger/internal/data/repositories/clients_repository"
+	"chatmerger/internal/data/uc"
+	"chatmerger/internal/domain"
 	"context"
 	"fmt"
 	"log"
@@ -23,13 +24,22 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	var usecases = newUsecases(repos)
 	log.Println(msgs.UsecasesCreated)
 
-	deps := commonDeps{usecases: usecases, ctx: ctx}
-	app, errCh := newApplication(deps, cfg)
-
+	deps := commonDeps{
+		usecases: usecases,
+		ctx:      ctx,
+	}
+	app, errCh := newApplication(ctx, deps)
 	// create and run clients api handler
-	go app.runGrpcSideServer()
+	gc := grpc_side.NewGrpcController(grpc_side.Config{
+		Port: cfg.GrpcServerPort,
+	}, app.usecases)
+	go app.runController(gc, "GrpcController")
+
 	// crate and run admin panel api handler
-	go app.runHttpSideServer()
+	hc := http_side.NewHttpController(http_side.Config{
+		Port: cfg.HttpServerPort,
+	}, app.usecases)
+	go app.runController(hc, "HttpController")
 
 	log.Println(msgs.ApplicationStarted)
 
@@ -49,33 +59,20 @@ func (a *application) gracefulShutdownApplication(errCh <-chan error) error {
 	return err
 }
 
-func (a *application) runHttpSideServer() {
+func (a *application) runController(c domain.Controller, name string) {
 	a.wg.Add(1)
 	defer a.wg.Done()
-	log.Println(msgs.RunHttpSideServer)
-	h := http_side.NewHttpSideServer(a.httpSideCfg, a.usecases)
-	err := h.Serve(a.ctx)
+	log.Println(msgs.RunController, name)
+	err := c.Run(a.ctx)
 	if err != nil {
-		a.errorf("http side server serve: %s", err)
+		a.errorf("%s controller run: %s", name, err)
 	}
-	log.Println(msgs.StoppedHttpSideServer)
-}
-
-func (a *application) runGrpcSideServer() {
-	a.wg.Add(1)
-	defer a.wg.Done()
-	log.Println(msgs.RunGrpcSideServer)
-	h := grpc_side.NewGrpcSideServer(a.grpcSideCfg, a.usecases)
-	err := h.Serve(a.ctx)
-	if err != nil {
-		a.errorf("grpc side server serve: %s", err)
-	}
-	log.Println(msgs.StoppedGrpcSideServer)
+	log.Println(msgs.StoppedController, name)
 }
 
 func (a *application) errorf(format string, args ...any) {
 	select {
-	case a.errCh <- fmt.Errorf(format, args):
+	case a.errCh <- fmt.Errorf(format, args...):
 	default:
 	}
 }

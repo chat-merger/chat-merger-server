@@ -1,9 +1,6 @@
 package app
 
 import (
-	"chatmerger/internal/api/grpc_side"
-	"chatmerger/internal/api/http_side"
-	"chatmerger/internal/config"
 	"chatmerger/internal/domain"
 	"chatmerger/internal/usecase"
 	"context"
@@ -12,27 +9,21 @@ import (
 
 type application struct {
 	commonDeps
-	httpSideCfg http_side.Config
-	grpcSideCfg grpc_side.Config
-	errCh       chan<- error
-	wg          *sync.WaitGroup // for indicate all things (servers, handlers...) will stopped
-	cancelFunc  context.CancelFunc
+	errCh      chan<- error
+	wg         *sync.WaitGroup // for indicate all things (servers, handlers...) will stopped
+	cancelFunc context.CancelFunc
+	ctx        context.Context
 }
 
-func newApplication(commonDeps commonDeps, cfg *config.Config) (*application, <-chan error) {
+func newApplication(ctx context.Context, commonDeps commonDeps) (*application, <-chan error) {
 	errCh := make(chan error)
+	ctx, cancelFunc := context.WithCancel(ctx)
 	return &application{
-		errCh:      errCh,
 		commonDeps: commonDeps,
-		httpSideCfg: http_side.Config{
-			Host: "localhost",
-			Port: cfg.HttpServerPort,
-		},
-		grpcSideCfg: grpc_side.Config{
-			Host: "localhost",
-			Port: cfg.GrpcServerPort,
-		},
-		wg: new(sync.WaitGroup),
+		errCh:      errCh,
+		wg:         new(sync.WaitGroup),
+		cancelFunc: cancelFunc,
+		ctx:        ctx,
 	}, errCh
 }
 

@@ -2,6 +2,6 @@ package domain
 
 import "context"
 
-type Handler interface {
-	Serve(ctx context.Context) error
+type Controller interface {
+	Run(ctx context.Context) error
 }

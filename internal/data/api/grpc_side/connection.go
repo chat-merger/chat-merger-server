@@ -1,8 +1,8 @@
 package grpc_side
 
 import (
-	"chatmerger/internal/api/pb"
 	"chatmerger/internal/common/msgs"
+	"chatmerger/internal/data/api/pb"
 	"chatmerger/internal/domain/model"
 	"fmt"
 	"io"
