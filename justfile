@@ -28,7 +28,12 @@ run:
 build *FLAGS:
     go build -o {{build_output_file_or_directory}} {{FLAGS}}  ./cmd/server/main.go
 
+# required:
+#   0. go programming language;
+#   1. proto compiler - protoc;
+#   2. add to .bashrc PATH="$PATH:$(go env GOPATH)/bin"
 init:
+    go mod tidy
     just install-deps
     just get-api
     just gen-pb
