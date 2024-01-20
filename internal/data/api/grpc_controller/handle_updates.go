@@ -1,4 +1,4 @@
-package grpc_side
+package grpc_controller
 
 import (
 	"chatmerger/internal/common/msgs"
@@ -8,10 +8,11 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 )
 
-func (s *GrpcSideServer) Connect(rpcCall pb.BaseService_ConnectServer) error {
+func (s *GrpcController) Updates(_ *emptypb.Empty, rpcCall pb.BaseService_UpdatesServer) error {
 	var md = parseConnMetaData(rpcCall.Context())
 	log.Printf("%s: %+v", msgs.ClientConnectedToServer, md)
 	var input = model.CreateClientSession{ApiKey: md.ApiKey}
@@ -25,8 +26,6 @@ func (s *GrpcSideServer) Connect(rpcCall pb.BaseService_ConnectServer) error {
 
 	//  when need send msg from some other clients to current connect
 	go conn.handleSessionReceivedMsgs()
-	// read clients input msg and fanout to other clients
-	go conn.handleMsgsFromRpcCall(s.requiredUsecases)
 
 	select {
 	case <-rpcCall.Context().Done():
@@ -49,5 +48,29 @@ func parseConnMetaData(ctx context.Context) metaData {
 	}
 	return metaData{
 		ApiKey: apiKey,
+	}
+}
+
+func (c *connection) handleSessionReceivedMsgs() {
+	for {
+		select {
+		case <-c.rpcCall.Context().Done():
+			return
+		case msg, ok := <-c.session.MsgCh:
+			if !ok {
+				c.errorf("failed to read channel of client session %#v\n", c.session)
+				return
+			}
+			response, err := messageToResponse(msg)
+			if err != nil {
+				c.errorf("failed convert msg to respponse: %s\n", err)
+				return
+			}
+			err = c.rpcCall.Send(response)
+			if err != nil {
+				c.errorf("failed send response to client session (%s): %s\n", c.session.Name, err)
+				return
+			}
+		}
 	}
 }

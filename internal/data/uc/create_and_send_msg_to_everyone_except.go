@@ -19,19 +19,19 @@ func NewCreateAndSendMsgToEveryoneExcept(sessionsRepo domain.ClientSessionsRepos
 	return &CreateAndSendMsgToEveryoneExcept{sessionsRepo: sessionsRepo}
 }
 
-func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids []model.ID) error {
+func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids []model.ID) (*model.Message, error) {
 	newMsg := model.Message{
-		Id:      model.NewID(uuid.NewString()),
-		ReplyId: msg.ReplyId,
-		Date:    msg.Date,
-		Author:  msg.Author,
-		From:    msg.From,
-		Silent:  msg.Silent,
-		Body:    msg.Body,
+		Id:       model.NewID(uuid.NewString()),
+		ReplyId:  msg.ReplyId,
+		Date:     msg.Date,
+		Username: msg.Username,
+		From:     msg.From,
+		Silent:   msg.Silent,
+		Body:     msg.Body,
 	}
 	connected, err := r.sessionsRepo.Connected()
 	if err != nil {
-		return fmt.Errorf("connected clients: %s", err)
+		return nil, fmt.Errorf("connected clients: %s", err)
 	}
 
 	for _, client := range connected {
@@ -43,5 +43,5 @@ func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg 
 		}
 	}
 
-	return nil
+	return &newMsg, nil
 }

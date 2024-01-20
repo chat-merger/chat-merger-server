@@ -1,4 +1,4 @@
-package http_side
+package http_controller
 
 import (
 	"chatmerger/internal/usecase"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type HttpSideServer struct {
+type HttpController struct {
 	sh *http.Server
 	requiredUsecases
 }
@@ -25,7 +25,7 @@ type requiredUsecases interface {
 	usecase.ConnectedClientsListUc
 }
 
-func NewHttpController(cfg Config, usecases requiredUsecases) *HttpSideServer {
+func NewHttpController(cfg Config, usecases requiredUsecases) *HttpController {
 	var router = mux.NewRouter()
 
 	httpServer := &http.Server{
@@ -36,7 +36,7 @@ func NewHttpController(cfg Config, usecases requiredUsecases) *HttpSideServer {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	var adminServer = &HttpSideServer{
+	var adminServer = &HttpController{
 		sh:               httpServer,
 		requiredUsecases: usecases,
 	}

@@ -1,4 +1,4 @@
-package grpc_side
+package grpc_controller
 
 import (
 	"chatmerger/internal/data/api/pb"
@@ -6,9 +6,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ pb.BaseServiceServer = (*GrpcSideServer)(nil)
+var _ pb.BaseServiceServer = (*GrpcController)(nil)
 
-type GrpcSideServer struct {
+type GrpcController struct {
 	cfg        Config
 	grpcServer *grpc.Server
 	requiredUsecases
@@ -24,10 +24,11 @@ type requiredUsecases interface {
 	usecase.CreateAndSendMsgToEveryoneExceptUc
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
+	usecase.ClientsUc
 }
 
-func NewGrpcController(cfg Config, usecases requiredUsecases) *GrpcSideServer {
-	var server = &GrpcSideServer{
+func NewGrpcController(cfg Config, usecases requiredUsecases) *GrpcController {
+	var server = &GrpcController{
 		cfg:              cfg,
 		requiredUsecases: usecases,
 	}

@@ -1,4 +1,4 @@
-package http_side
+package http_controller
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (s *HttpSideServer) Run(ctx context.Context) error {
+func (s *HttpController) Run(ctx context.Context) error {
 	go s.contextCancelHandler(ctx)
 
 	if err := s.sh.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -17,14 +17,14 @@ func (s *HttpSideServer) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *HttpSideServer) contextCancelHandler(ctx context.Context) {
+func (s *HttpController) contextCancelHandler(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		s.sh.Shutdown(context.Background())
 	}
 }
 
-func (s *HttpSideServer) registerHttpServerRoutes(router *mux.Router) {
+func (s *HttpController) registerHttpServerRoutes(router *mux.Router) {
 
 	router.HandleFunc("/", s.index)
 

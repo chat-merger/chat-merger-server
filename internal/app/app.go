@@ -36,6 +36,7 @@ type usecasesImpls struct {
 	usecase.CreateAndSendMsgToEveryoneExceptUc
 	usecase.CreateClientSessionUc
 	usecase.DropClientSessionUc
+	usecase.ClientsUc
 	usecase.ClientsListUc
 	usecase.ConnectedClientsListUc
 	usecase.CreateClientUc

@@ -63,13 +63,13 @@ type Client struct {
 }
 
 type Message struct {
-	Id      ID
-	ReplyId *ID
-	Date    time.Time
-	Author  *string
-	From    string // client name
-	Silent  bool
-	Body    Body
+	Id       ID
+	ReplyId  *ID
+	Date     time.Time
+	Username *string
+	From     string // client name
+	Silent   bool
+	Body     Body
 }
 
 type Body interface{ IsBody() }
@@ -110,10 +110,10 @@ const (
 // create message
 
 type CreateMessage struct {
-	ReplyId *ID
-	Date    time.Time
-	Author  *string
-	From    string // client name
-	Silent  bool
-	Body    Body
+	ReplyId  *ID
+	Date     time.Time
+	Username *string
+	From     string // client name
+	Silent   bool
+	Body     Body
 }

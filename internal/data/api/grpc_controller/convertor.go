@@ -1,4 +1,4 @@
-package grpc_side
+package grpc_controller
 
 import (
 	"chatmerger/internal/data/api/pb"
@@ -30,12 +30,12 @@ func requestToCreateMessage(request *pb.Request, client string) (*model.CreateMe
 	}
 
 	return &model.CreateMessage{
-		ReplyId: stringToIdIfExists(request.ReplyMsgId),
-		Date:    time.Unix(request.CreatedAt, 0),
-		Author:  request.Author,
-		From:    client,
-		Silent:  request.IsSilent,
-		Body:    body,
+		ReplyId:  stringToIdIfExists(request.ReplyMsgId),
+		Date:     time.Unix(request.CreatedAt, 0),
+		Username: request.Username,
+		From:     client,
+		Silent:   request.Silent,
+		Body:     body,
 	}, nil
 }
 
@@ -50,9 +50,9 @@ func messageToResponse(msg model.Message) (*pb.Response, error) {
 		Id:         msg.Id.Value(),
 		ReplyMsgId: replyMsgId,
 		CreatedAt:  msg.Date.Unix(),
-		Author:     msg.Author,
+		Username:   msg.Username,
 		Client:     msg.From,
-		IsSilent:   msg.Silent,
+		Silent:     msg.Silent,
 		Body:       nil, // WithoutBody!!!!!
 	}
 	// add body

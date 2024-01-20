@@ -3,8 +3,8 @@ package app
 import (
 	"chatmerger/internal/common/msgs"
 	"chatmerger/internal/config"
-	"chatmerger/internal/data/api/grpc_side"
-	"chatmerger/internal/data/api/http_side"
+	"chatmerger/internal/data/api/grpc_controller"
+	"chatmerger/internal/data/api/http_controller"
 	csr "chatmerger/internal/data/repositories/client_sessions_repository"
 	cr "chatmerger/internal/data/repositories/clients_repository"
 	"chatmerger/internal/data/uc"
@@ -30,13 +30,13 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	}
 	app, errCh := newApplication(ctx, deps)
 	// create and run clients api handler
-	gc := grpc_side.NewGrpcController(grpc_side.Config{
+	gc := grpc_controller.NewGrpcController(grpc_controller.Config{
 		Port: cfg.GrpcServerPort,
 	}, app.usecases)
 	go app.runController(gc, "GrpcController")
 
 	// crate and run admin panel api handler
-	hc := http_side.NewHttpController(http_side.Config{
+	hc := http_controller.NewHttpController(http_controller.Config{
 		Port: cfg.HttpServerPort,
 	}, app.usecases)
 	go app.runController(hc, "HttpController")
@@ -94,14 +94,15 @@ func initRepositories(cfg *config.Config) (*repositories, error) {
 
 func newUsecases(repos *repositories) *usecasesImpls {
 	return &usecasesImpls{
-		ConnectedClientsListUc: uc.NewConnectedClientsList(repos.sessionsRepo),
 		// clients api server
 		CreateAndSendMsgToEveryoneExceptUc: uc.NewCreateAndSendMsgToEveryoneExcept(repos.sessionsRepo),
 		CreateClientSessionUc:              uc.NewCreateClientSession(repos.clientsRepo, repos.sessionsRepo),
 		DropClientSessionUc:                uc.NewDropClientSession(repos.sessionsRepo),
+		ClientsUc:                          uc.NewClientSession(repos.sessionsRepo),
 		// admin panel api server
-		ClientsListUc:  uc.NewClientsList(repos.clientsRepo),
-		CreateClientUc: uc.NewCreateClient(repos.clientsRepo),
-		DeleteClientUc: uc.NewDeleteClient(repos.clientsRepo),
+		ClientsListUc:          uc.NewClientsList(repos.clientsRepo),
+		ConnectedClientsListUc: uc.NewConnectedClientsList(repos.sessionsRepo),
+		CreateClientUc:         uc.NewCreateClient(repos.clientsRepo),
+		DeleteClientUc:         uc.NewDeleteClient(repos.clientsRepo),
 	}
 }

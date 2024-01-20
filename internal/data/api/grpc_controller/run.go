@@ -1,4 +1,4 @@
-package grpc_side
+package grpc_controller
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func (s *GrpcSideServer) Run(ctx context.Context) error {
+func (s *GrpcController) Run(ctx context.Context) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port))
 	if err != nil {
 		return fmt.Errorf("create listener: %v", err)

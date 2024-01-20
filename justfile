@@ -11,7 +11,7 @@ api_version_tag := "v0.0.1c"
 api_scheme_destination := "./api"
 api_file_name := "mergerapi.proto"
 
-generated_pb_package_destination := "./internal/api"
+generated_pb_package_destination := "./internal/data/api"
 
 # build settings:
 build_output_file_or_directory := "./bin/server"
