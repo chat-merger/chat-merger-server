@@ -19,7 +19,7 @@ func NewDeleteClient(clientRepos domain.ClientsRepository) *DeleteClient {
 }
 
 func (r *DeleteClient) DeleteClients(ids []model.ID) error {
-	clients, err := r.clientRepos.GetClients()
+	clients, err := r.clientRepos.GetClients(model.ClientsFilter{})
 	if err != nil {
 		return fmt.Errorf("getting client list: %s", err)
 	}

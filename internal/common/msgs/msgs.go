@@ -13,18 +13,18 @@ const (
 	// application
 	ApplicationStart                = "Start Application"
 	ApplicationStarted              = "Application start is over, waiting when ctx done"
-	UsecasesCreated                 = "Usecases Created"
+	ServicesCreated                 = "ServicesCreated"
+	UsecasesCreated                 = "UsecasesCreated"
 	RepositoriesInitialized         = "RepositoriesInitialized"
 	ApplicationReceiveCtxDone       = "Application receive ctx.Done signal"
 	ApplicationReceiveInternalError = "ApplicationReceiveInternalError"
 
 	// Grpc server
-	RunGrpcController            = "RunGrpcController"
-	StoppedGrpcController        = "StoppedGrpcController"
-	ClientConnectedToServer      = "Client Connected To Server"
-	ClientSessionCreated         = "Client Session Created"
-	ClientSessionCloseConnection = "ClientSessionCloseConnection"
-	NewMessageFromClient         = "NewMessageFromClient"
+	RunGrpcController         = "RunGrpcController"
+	StoppedGrpcController     = "StoppedGrpcController"
+	ClientConnectedToServer   = "Client Connected To Server"
+	ClientSubscribedToNewMsgs = "ClientSubscribedToNewMsgs"
+	NewMessageFromClient      = "NewMessageFromClient"
 
 	// http server
 	RunHttpController     = "RunHttpController"

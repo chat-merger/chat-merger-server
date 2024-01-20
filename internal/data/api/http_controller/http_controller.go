@@ -21,8 +21,7 @@ type Config struct {
 type requiredUsecases interface {
 	usecase.CreateClientUc
 	usecase.DeleteClientUc
-	usecase.ClientsListUc
-	usecase.ConnectedClientsListUc
+	usecase.ClientsUc
 }
 
 func NewHttpController(cfg Config, usecases requiredUsecases) *HttpController {

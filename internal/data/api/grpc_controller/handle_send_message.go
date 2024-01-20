@@ -4,7 +4,6 @@ import (
 	"chatmerger/internal/common/msgs"
 	"chatmerger/internal/data/api/pb"
 	"chatmerger/internal/domain/model"
-	"chatmerger/internal/usecase"
 	"context"
 	"errors"
 	"fmt"
@@ -14,19 +13,19 @@ import (
 func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.Response, error) {
 	var md = parseConnMetaData(ctx)
 	log.Printf("%s: %+v", msgs.NewMessageFromClient, md)
-	sessions, err := s.Clients(usecase.ClientsFilter{ApiKey: &md.ApiKey})
+	clients, err := s.Clients(model.ClientsFilter{ApiKey: &md.ApiKey})
 	if err != nil {
-		return nil, fmt.Errorf("failed create session session: %s", err)
+		return nil, fmt.Errorf("failed get clients: %s", err)
 	}
-	if len(sessions) == 0 {
+	if len(clients) == 0 {
 		return nil, errors.New("not found client")
 	}
-	session := sessions[0]
-	msg, err := requestToCreateMessage(req, session.Name)
+	client := clients[0]
+	msg, err := requestToCreateMessage(req, client.Name)
 	if err != nil {
 		return nil, fmt.Errorf("transform request to response: %v\n", err)
 	}
-	newMsg, err := s.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{session.Id})
+	newMsg, err := s.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{client.Id})
 	if err != nil {
 		return nil, fmt.Errorf("send msg to clients: %v\n", err)
 	}

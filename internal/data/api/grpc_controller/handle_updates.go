@@ -6,6 +6,7 @@ import (
 	"chatmerger/internal/data/api/pb"
 	"chatmerger/internal/domain/model"
 	"context"
+	"errors"
 	"fmt"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,25 +16,27 @@ import (
 func (s *GrpcController) Updates(_ *emptypb.Empty, rpcCall pb.BaseService_UpdatesServer) error {
 	var md = parseConnMetaData(rpcCall.Context())
 	log.Printf("%s: %+v", msgs.ClientConnectedToServer, md)
-	var input = model.CreateClientSession{ApiKey: md.ApiKey}
-	clientSession, err := s.CreateClientSession(input)
+
+	clients, err := s.Clients(model.ClientsFilter{ApiKey: &md.ApiKey})
 	if err != nil {
-		return fmt.Errorf("failed create session session: %s", err)
+		return fmt.Errorf("get clients: %s", err)
 	}
-	log.Printf("%s: %+v", msgs.ClientSessionCreated, clientSession)
+	if len(clients) == 0 {
+		return errors.New("invalid apikey")
+	}
 
-	conn, onErr := newConnection(rpcCall, clientSession)
+	client := clients[0]
 
-	//  when need send msg from some other clients to current connect
-	go conn.handleSessionReceivedMsgs()
+	err = s.SubscribeClientToNewMsgs(client.Id, msgsEventHandler(rpcCall))
+	if err != nil {
+		return fmt.Errorf("failed subscribe to new msgs: %s", err)
+	}
+	log.Println(msgs.ClientSubscribedToNewMsgs)
 
 	select {
 	case <-rpcCall.Context().Done():
-		s.DropClientSession([]model.ID{conn.session.Id})
+		s.DropClientSubscription([]model.ID{client.Id})
 		return nil
-	case err := <-onErr:
-		s.DropClientSession([]model.ID{conn.session.Id})
-		return err // todo replace with friendly error
 	}
 }
 
@@ -53,26 +56,16 @@ func parseConnMetaData(ctx context.Context) metaData {
 	}
 }
 
-func (c *connection) handleSessionReceivedMsgs() {
-	for {
-		select {
-		case <-c.rpcCall.Context().Done():
-			return
-		case msg, ok := <-c.session.MsgCh:
-			if !ok {
-				c.errorf("failed to read channel of client session %#v\n", c.session)
-				return
-			}
-			response, err := messageToResponse(msg)
-			if err != nil {
-				c.errorf("failed convert msg to respponse: %s\n", err)
-				return
-			}
-			err = c.rpcCall.Send(response)
-			if err != nil {
-				c.errorf("failed send response to client session (%s): %s\n", c.session.Name, err)
-				return
-			}
+func msgsEventHandler(rpcCall pb.BaseService_UpdatesServer) func(model.Message) error {
+	return func(message model.Message) error {
+		response, err := messageToResponse(message)
+		if err != nil {
+			return fmt.Errorf("failed convert msg to response: %s\n", err)
 		}
+		err = rpcCall.Send(response)
+		if err != nil {
+			return fmt.Errorf("failed send response: %s\n", err)
+		}
+		return nil
 	}
 }

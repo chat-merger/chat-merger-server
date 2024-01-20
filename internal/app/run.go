@@ -5,10 +5,10 @@ import (
 	"chatmerger/internal/config"
 	"chatmerger/internal/data/api/grpc_controller"
 	"chatmerger/internal/data/api/http_controller"
-	csr "chatmerger/internal/data/repositories/client_sessions_repository"
 	cr "chatmerger/internal/data/repositories/clients_repository"
 	"chatmerger/internal/data/uc"
 	"chatmerger/internal/domain"
+	"chatmerger/internal/service/msgbus"
 	"context"
 	"fmt"
 	"log"
@@ -21,14 +21,13 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	}
 	log.Println(msgs.RepositoriesInitialized)
 
-	var usecases = newUsecases(repos)
+	ss := newServices()
+	log.Println(msgs.ServicesCreated)
+
+	var usecases = newUsecases(repos, ss)
 	log.Println(msgs.UsecasesCreated)
 
-	deps := commonDeps{
-		usecases: usecases,
-		ctx:      ctx,
-	}
-	app, errCh := newApplication(ctx, deps)
+	app, errCh := newApplication(ctx, usecases)
 	// create and run clients api handler
 	gc := grpc_controller.NewGrpcController(grpc_controller.Config{
 		Port: cfg.GrpcServerPort,
@@ -78,7 +77,6 @@ func (a *application) errorf(format string, args ...any) {
 }
 
 func initRepositories(cfg *config.Config) (*repositories, error) {
-	sessionsRepo := csr.NewClientSessionsRepositoryBase()
 	clientsRepo, err := cr.NewClientsRepositoryBase(cr.Config{
 		FilePath: cfg.ClientsCfgFile,
 	})
@@ -86,23 +84,24 @@ func initRepositories(cfg *config.Config) (*repositories, error) {
 		return nil, fmt.Errorf("create clients repository: %s", err)
 	}
 	return &repositories{
-		clientsRepo:  clientsRepo,
-		sessionsRepo: sessionsRepo,
+		cRepo: clientsRepo,
 	}, nil
 
 }
 
-func newUsecases(repos *repositories) *usecasesImpls {
-	return &usecasesImpls{
+func newUsecases(r *repositories, ss *services) usecasesImpls {
+	return usecasesImpls{
 		// clients api server
-		CreateAndSendMsgToEveryoneExceptUc: uc.NewCreateAndSendMsgToEveryoneExcept(repos.sessionsRepo),
-		CreateClientSessionUc:              uc.NewCreateClientSession(repos.clientsRepo, repos.sessionsRepo),
-		DropClientSessionUc:                uc.NewDropClientSession(repos.sessionsRepo),
-		ClientsUc:                          uc.NewClientSession(repos.sessionsRepo),
+		CreateAndSendMsgToEveryoneExceptUc: uc.NewCreateAndSendMsgToEveryoneExcept(r.cRepo, ss.bus),
+		SubscribeClientToNewMsgsUc:         uc.NewSubscribeClientToNewMsgs(r.cRepo, ss.bus),
+		DropClientSubscriptionUc:           uc.NewDropClientSubscription(r.cRepo, ss.bus),
 		// admin panel api server
-		ClientsListUc:          uc.NewClientsList(repos.clientsRepo),
-		ConnectedClientsListUc: uc.NewConnectedClientsList(repos.sessionsRepo),
-		CreateClientUc:         uc.NewCreateClient(repos.clientsRepo),
-		DeleteClientUc:         uc.NewDeleteClient(repos.clientsRepo),
+		ClientsUc:      uc.NewClients(r.cRepo),
+		CreateClientUc: uc.NewCreateClient(r.cRepo),
+		DeleteClientUc: uc.NewDeleteClient(r.cRepo),
 	}
+}
+
+func newServices() *services {
+	return &services{bus: msgbus.NewMessagesBus()}
 }

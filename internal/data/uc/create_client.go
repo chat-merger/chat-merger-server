@@ -24,7 +24,7 @@ func (r *CreateClient) CreateClient(input model.CreateClient) error {
 		Name:   input.Name,
 		ApiKey: model.NewApiKey(uuid.New().String()),
 	}
-	clients, err := r.clientRepos.GetClients()
+	clients, err := r.clientRepos.GetClients(model.ClientsFilter{})
 	if err != nil {
 		return fmt.Errorf("getting client list: %s", err)
 	}

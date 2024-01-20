@@ -7,10 +7,6 @@ import (
 
 // transfer data (dto) ( handler -> usecase(dto) -> dto to domain -> repository.meth(domain) = result)
 
-type CreateClientSession struct {
-	ApiKey ApiKey
-}
-
 type CreateClient struct {
 	Name string `json:"name"`
 }
@@ -51,15 +47,26 @@ func NewApiKey(val string) ApiKey {
 
 // main models
 
-type ClientSession struct {
-	Client
-	MsgCh <-chan Message
-}
-
 type Client struct {
 	Id     ID     `json:"id"`
 	Name   string `json:"name,omitempty"`
 	ApiKey ApiKey `json:"api_key"`
+	Status ConnStatus
+}
+
+type ConnStatus uint8
+
+const (
+	_ ConnStatus = iota
+	ConnStatusActive
+	ConnStatusInactive
+)
+
+type ClientsFilter struct {
+	Id     *ID
+	Name   *string
+	ApiKey *ApiKey
+	Status *ConnStatus
 }
 
 type Message struct {

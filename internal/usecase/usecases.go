@@ -7,28 +7,17 @@ import "chatmerger/internal/domain/model"
 type CreateAndSendMsgToEveryoneExceptUc interface {
 	CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids []model.ID) (*model.Message, error)
 }
-type CreateClientSessionUc interface {
-	CreateClientSession(input model.CreateClientSession) (*model.ClientSession, error)
+type SubscribeClientToNewMsgsUc interface {
+	SubscribeClientToNewMsgs(id model.ID, handler func(newMsg model.Message) error) error
 }
-type DropClientSessionUc interface {
-	DropClientSession(ids []model.ID) error
-}
-type ClientsUc interface {
-	Clients(filter ClientsFilter) ([]model.Client, error)
-}
-type ClientsFilter struct {
-	Id     *model.ID
-	Name   *string
-	ApiKey *model.ApiKey
+type DropClientSubscriptionUc interface {
+	DropClientSubscription(ids []model.ID) error
 }
 
 // admin site usecases
 
-type ClientsListUc interface {
-	ClientsList() ([]model.Client, error)
-}
-type ConnectedClientsListUc interface {
-	ConnectedClientsList() ([]model.Client, error)
+type ClientsUc interface {
+	Clients(filter model.ClientsFilter) ([]model.Client, error)
 }
 type CreateClientUc interface {
 	CreateClient(input model.CreateClient) error

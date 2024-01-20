@@ -14,24 +14,7 @@ var _ domain.ClientsRepository = (*ClientsRepositoryBase)(nil)
 type ClientsRepositoryBase struct {
 	clients []model.Client
 	cfg     Config
-	mu      *sync.Mutex
-}
-
-func (c *ClientsRepositoryBase) GetClients() ([]model.Client, error) {
-	return c.clients, nil
-}
-
-func (c *ClientsRepositoryBase) SetClients(clients []model.Client) error {
-	c.clients = clients
-	err := c.writeToConfig(fromDomain(clients))
-	if err != nil {
-		return fmt.Errorf("failed write clients: %s", err)
-	}
-	return nil
-}
-
-type Config struct {
-	FilePath string
+	mu      sync.RWMutex
 }
 
 func NewClientsRepositoryBase(cfg Config) (*ClientsRepositoryBase, error) {
@@ -44,8 +27,51 @@ func NewClientsRepositoryBase(cfg Config) (*ClientsRepositoryBase, error) {
 	return &ClientsRepositoryBase{
 		clients: fb.convertToDomain(),
 		cfg:     cfg,
-		mu:      new(sync.Mutex),
+		mu:      sync.RWMutex{},
 	}, nil
+}
+
+func (c *ClientsRepositoryBase) UpdateClient(id model.ID, new model.Client) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for i, client := range c.clients {
+		if client.Id == id {
+			c.clients[i] = new
+		}
+	}
+	return nil
+}
+
+func (c *ClientsRepositoryBase) GetClients(filter model.ClientsFilter) ([]model.Client, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	filtered := make([]model.Client, 0, len(c.clients))
+
+	for _, client := range c.clients {
+		if (filter.Id == nil || client.Id == *filter.Id) &&
+			(filter.Name == nil || client.Name == *filter.Name) &&
+			(filter.ApiKey == nil || client.ApiKey == *filter.ApiKey) &&
+			(filter.Status == nil || client.Status == *filter.Status) {
+			filtered = append(filtered, client)
+		}
+	}
+
+	return filtered, nil
+}
+
+func (c *ClientsRepositoryBase) SetClients(clients []model.Client) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.clients = clients
+	err := c.writeToConfig(fromDomain(clients))
+	if err != nil {
+		return fmt.Errorf("failed write clients: %s", err)
+	}
+	return nil
+}
+
+type Config struct {
+	FilePath string
 }
 
 func fromDomain(clients []model.Client) fileBody {
@@ -73,8 +99,6 @@ func (r fileBody) convertToDomain() []model.Client {
 }
 
 func (c *ClientsRepositoryBase) writeToConfig(body fileBody) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	var b []byte
 	b, err := json.MarshalIndent(body, "", " ")
 	if err != nil {

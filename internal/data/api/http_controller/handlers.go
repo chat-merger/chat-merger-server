@@ -75,17 +75,15 @@ func (s *HttpController) index(w http.ResponseWriter, r *http.Request) {
 func (s *HttpController) executeTemplWithClientsTable(wr io.Writer) error {
 	var tmpl = template.Must(template.ParseFiles("web/clients_table.html"))
 
-	clients, err := s.ClientsList()
+	clients, err := s.Clients(model.ClientsFilter{})
 	if err != nil {
 		return fmt.Errorf("get clients list: %s", err)
 	}
-	conns, err := s.ConnectedClientsList()
-	if err != nil {
-		return fmt.Errorf("get connected list: %s", err)
-	}
 	var connectedNames []string
-	for _, conn := range conns {
-		connectedNames = append(connectedNames, conn.Name)
+	for _, client := range clients {
+		if client.Status == model.ConnStatusActive {
+			connectedNames = append(connectedNames, client.Name)
+		}
 	}
 	var resp = map[string]any{
 		"Clients":     clients,
