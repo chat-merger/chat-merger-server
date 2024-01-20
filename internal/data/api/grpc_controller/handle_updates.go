@@ -35,7 +35,7 @@ func (s *GrpcController) Updates(_ *emptypb.Empty, rpcCall pb.BaseService_Update
 
 	select {
 	case <-rpcCall.Context().Done():
-		s.DropClientSubscription([]model.ID{client.Id})
+		s.DropClientSubscription(client.Id)
 		return nil
 	}
 }

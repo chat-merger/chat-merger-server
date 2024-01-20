@@ -54,7 +54,7 @@ func (s *HttpController) deleteClientHandler(w http.ResponseWriter, r *http.Requ
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err := s.DeleteClients([]model.ID{model.NewID(idStr)})
+	err := s.DeleteClients(model.NewID(idStr))
 	if err != nil {
 		log.Printf("failed delete clients: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

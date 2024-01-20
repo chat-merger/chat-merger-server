@@ -11,7 +11,7 @@ type SubscribeClientToNewMsgsUc interface {
 	SubscribeClientToNewMsgs(id model.ID, handler func(newMsg model.Message) error) error
 }
 type DropClientSubscriptionUc interface {
-	DropClientSubscription(ids []model.ID) error
+	DropClientSubscription(ids ...model.ID) error
 }
 
 // admin site usecases
@@ -23,5 +23,5 @@ type CreateClientUc interface {
 	CreateClient(input model.CreateClient) error
 }
 type DeleteClientUc interface {
-	DeleteClients(ids []model.ID) error
+	DeleteClients(ids ...model.ID) error
 }

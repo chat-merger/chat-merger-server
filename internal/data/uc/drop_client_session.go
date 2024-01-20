@@ -19,7 +19,7 @@ func NewDropClientSubscription(repo domain.ClientsRepository, bus *msgbus.Messag
 	return &DropClientSubscription{cRepo: repo, bus: bus}
 }
 
-func (d *DropClientSubscription) DropClientSubscription(ids []model.ID) error {
+func (d *DropClientSubscription) DropClientSubscription(ids ...model.ID) error {
 
 	for _, id := range ids {
 		clients, err := d.cRepo.GetClients(model.ClientsFilter{Id: &id})
