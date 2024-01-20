@@ -7,7 +7,7 @@ protoc_gen_go_version  := "v1.31.0"
 protoc_gen_go_grpc_version  := "v1.3.0"
 
 # Api protobuf scheme:
-api_version_tag := "v0.0.1c"
+api_version_tag := "v0.0.2"
 api_scheme_destination := "./api"
 api_file_name := "mergerapi.proto"
 
