@@ -42,8 +42,8 @@ gen-pb out=generated_pb_package_destination scheme=(api_scheme_destination+"/"+a
     mkdir -p {{out}}
     protoc --go_out={{out}} --go-grpc_out={{out}} {{scheme}}
 
-get-api tag=api_version_tag dest=api_scheme_destination file=api_file_name:
-	./scripts/download-api-scheme.sh -t {{tag}} -d {{dest}} -f {{file}}
+get-api branch=api_version_tag dest=api_scheme_destination file=api_file_name:
+	./scripts/download-api-scheme-v2.sh -b {{branch}} -d {{dest}} -f {{file}}
 
 install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@{{protoc_gen_go_version}}
