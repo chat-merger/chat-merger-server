@@ -29,8 +29,10 @@ func (s *GrpcController) Updates(_ *emptypb.Empty, rpcCall pb.BaseService_Update
 
 	select {
 	case <-rpcCall.Context().Done():
+		s.DropClientSession([]model.ID{conn.session.Id})
 		return nil
 	case err := <-onErr:
+		s.DropClientSession([]model.ID{conn.session.Id})
 		return err // todo replace with friendly error
 	}
 }
