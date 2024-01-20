@@ -19,10 +19,10 @@ build_output_file_or_directory := "./bin/server"
 default: run
 
 run:
-    go run ./cmd/server/main.go \
-    -clients-cfg ./clients.json \
-    -grpc-port 32256 \
-    -http-port 32255
+    go run ./cmd/server \
+    --clients-cfg=clients.config \
+    --grpc-port=32256 \
+    --http-port=32255
 
 
 build *FLAGS:

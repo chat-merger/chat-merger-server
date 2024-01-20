@@ -4,19 +4,26 @@ import (
 	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
 	"errors"
+	"sync"
 )
 
 var _ domain.ClientSessionsRepository = (*ClientSessionsRepositoryBase)(nil)
 
 type ClientSessionsRepositoryBase struct {
 	conns []connect
+	mu    sync.RWMutex
 }
 
 func NewClientSessionsRepositoryBase() *ClientSessionsRepositoryBase {
-	return &ClientSessionsRepositoryBase{}
+	return &ClientSessionsRepositoryBase{
+		conns: make([]connect, 0),
+		mu:    sync.RWMutex{},
+	}
 }
 
 func (c *ClientSessionsRepositoryBase) Send(msg model.Message, clientId model.ID) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	var expectConn *connect
 	for _, conn := range c.conns {
 		if conn.Id == clientId {
@@ -32,6 +39,8 @@ func (c *ClientSessionsRepositoryBase) Send(msg model.Message, clientId model.ID
 }
 
 func (c *ClientSessionsRepositoryBase) Connect(client model.Client) (*model.ClientSession, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	var newConn = connect{
 		Client: client,
 		ch:     make(chan model.Message),
@@ -41,6 +50,8 @@ func (c *ClientSessionsRepositoryBase) Connect(client model.Client) (*model.Clie
 }
 
 func (c *ClientSessionsRepositoryBase) Connected() ([]model.Client, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	var clients []model.Client
 	for _, conn := range c.conns {
 		clients = append(clients, conn.Client)
@@ -49,6 +60,8 @@ func (c *ClientSessionsRepositoryBase) Connected() ([]model.Client, error) {
 }
 
 func (c *ClientSessionsRepositoryBase) Disconnect(id model.ID) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for i, conn := range c.conns {
 		if conn.Id == id {
 			// remove from conns list
