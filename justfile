@@ -1,7 +1,3 @@
-# Golang setup:
-export GOARCH := "amd64"
-export GOOS := "linux"
-
 # Protoc plugins:
 protoc_gen_go_version  := "v1.31.0"
 protoc_gen_go_grpc_version  := "v1.3.0"

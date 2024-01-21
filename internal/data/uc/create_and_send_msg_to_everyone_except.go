@@ -34,16 +34,26 @@ func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg 
 		Silent:   msg.Silent,
 		Body:     msg.Body,
 	}
-
-	expStatus := model.ConnStatusActive
-	connected, err := r.cRepo.GetClients(model.ClientsFilter{Status: &expStatus})
+	clients, err := r.cRepo.GetClients(model.ClientsFilterExceptStatus{})
 	if err != nil {
 		return nil, fmt.Errorf("get clients: %s", err)
 	}
 
+	// filter connected from all clients
+	idsOfConn := r.bus.Subjects()
+	connected := make([]model.Client, 0, len(clients))
+	for _, client := range clients {
+		isConnected := slices.ContainsFunc(idsOfConn, func(subject eventbus.Subject) bool {
+			return client.Id == subject
+		})
+		if isConnected {
+			connected = append(connected, client)
+		}
+	}
+
 	// definition client who received msg
-	recipients := make([]model.ID, 0, len(connected))
-	for _, client := range connected {
+	recipients := make([]model.ID, 0, len(clients))
+	for _, client := range clients {
 		var isExcepted = slices.ContainsFunc(ids, func(exceptedId model.ID) bool {
 			return client.Id == exceptedId
 		})

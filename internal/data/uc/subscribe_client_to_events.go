@@ -7,6 +7,7 @@ import (
 	"chatmerger/internal/usecase"
 	"errors"
 	"fmt"
+	"slices"
 )
 
 var _ usecase.SubscribeClientToEventsUc = (*SubscribeClientToEvents)(nil)
@@ -29,7 +30,7 @@ var (
 )
 
 func (c *SubscribeClientToEvents) SubscribeClientToEvents(id model.ID, handler eventbus.Handler) error {
-	clients, err := c.cRepo.GetClients(model.ClientsFilter{Id: &id})
+	clients, err := c.cRepo.GetClients(model.ClientsFilterExceptStatus{Id: &id})
 	if err != nil {
 		return fmt.Errorf("get clients: %s", err)
 	}
@@ -39,22 +40,19 @@ func (c *SubscribeClientToEvents) SubscribeClientToEvents(id model.ID, handler e
 		return ErrorClientWithGivenApiKeyNotFound
 	}
 
-	// take first
-	client := clients[0]
+	// check what client already is e.b. subject
+	idsOfConn := c.bus.Subjects()
+	isConnected := slices.ContainsFunc(idsOfConn, func(subject eventbus.Subject) bool {
+		return clients[0].Id == subject
+	})
 
 	// client don't to be connected
-	if client.Status == model.ConnStatusActive {
+	if isConnected {
 		return ErrorClientAlreadyConnected
 	}
 
-	client.Status = model.ConnStatusActive
-	err = c.cRepo.Update(client.Id, client)
-	if err != nil {
-		return fmt.Errorf("update calient status: %s", err)
-	}
-
 	// subscribe to NewMessages
-	c.bus.Subscribe(client.Id, handler)
+	c.bus.Subscribe(clients[0].Id, handler)
 
 	return nil
 }

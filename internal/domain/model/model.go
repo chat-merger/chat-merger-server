@@ -17,17 +17,24 @@ type ID string
 
 // main models
 
-type Client struct {
+type ClientWithStatus struct {
 	Id     ID
 	Name   string
 	ApiKey ApiKey
 	Status ConnStatus
 }
 
+type Client struct {
+	Id     ID
+	Name   string
+	ApiKey ApiKey
+}
+
 type ConnStatus uint8
 
 const (
-	ConnStatusInactive ConnStatus = iota
+	ConnStatusUndefined ConnStatus = iota
+	ConnStatusInactive
 	ConnStatusActive
 )
 
@@ -35,7 +42,21 @@ type ClientsFilter struct {
 	Id     *ID
 	Name   *string
 	ApiKey *ApiKey
-	Status *ConnStatus
+	Status ConnStatus
+}
+
+func (f ClientsFilter) ExceptStatus() ClientsFilterExceptStatus {
+	return ClientsFilterExceptStatus{
+		Id:     f.Id,
+		Name:   f.Name,
+		ApiKey: f.ApiKey,
+	}
+}
+
+type ClientsFilterExceptStatus struct {
+	Id     *ID
+	Name   *string
+	ApiKey *ApiKey
 }
 
 type Message struct {

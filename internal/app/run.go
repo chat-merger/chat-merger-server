@@ -106,8 +106,8 @@ func newUsecases(r *repositories, bus *eventbus.EventBus) usecasesImpls {
 		SubscribeClientToEventsUc:          uc.NewSubscribeClientToEvents(r.cRepo, bus),
 		DropClientSubscriptionUc:           uc.NewDropClientSubscription(r.cRepo, bus),
 		// admin panel api server
-		ClientsUc:      uc.NewClients(r.cRepo),
+		ClientsUc:      uc.NewClients(r.cRepo, bus),
 		CreateClientUc: uc.NewCreateClient(r.cRepo),
-		DeleteClientUc: uc.NewDeleteClient(r.cRepo),
+		DeleteClientUc: uc.NewDeleteClient(r.cRepo, bus),
 	}
 }

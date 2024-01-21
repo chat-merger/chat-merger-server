@@ -20,7 +20,7 @@ type DropClientSubscriptionUc interface {
 // admin site usecases
 
 type ClientsUc interface {
-	Clients(filter model.ClientsFilter) ([]model.Client, error)
+	Clients(filter model.ClientsFilter) ([]model.ClientWithStatus, error)
 }
 type CreateClientUc interface {
 	CreateClient(input model.CreateClient) error

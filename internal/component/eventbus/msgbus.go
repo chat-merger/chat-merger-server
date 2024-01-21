@@ -17,13 +17,13 @@ type Handler func(event Event) error
 
 type EventBus struct {
 	handlers map[Subject]Handler
-	mu       *sync.Mutex
+	mu       *sync.RWMutex
 }
 
 func NewEventBus() *EventBus {
 	return &EventBus{
 		handlers: make(map[Subject]Handler),
-		mu:       new(sync.Mutex),
+		mu:       new(sync.RWMutex),
 	}
 }
 
@@ -55,4 +55,14 @@ func (m *EventBus) Publish(event Event, subjects ...Subject) error {
 		}
 	}
 	return nil
+}
+
+func (m *EventBus) Subjects() []Subject {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	subjects := make([]Subject, 0, len(m.handlers))
+	for subject := range m.handlers {
+		subjects = append(subjects, subject)
+	}
+	return subjects
 }

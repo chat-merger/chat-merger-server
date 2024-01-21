@@ -22,7 +22,7 @@ func NewDropClientSubscription(repo repository.ClientsRepository, bus *eventbus.
 func (d *DropClientSubscription) DropClientSubscription(ids ...model.ID) error {
 
 	for _, id := range ids {
-		clients, err := d.cRepo.GetClients(model.ClientsFilter{Id: &id})
+		clients, err := d.cRepo.GetClients(model.ClientsFilterExceptStatus{Id: &id})
 		if err != nil {
 			return fmt.Errorf("get clients: %s", err)
 		}
@@ -32,19 +32,10 @@ func (d *DropClientSubscription) DropClientSubscription(ids ...model.ID) error {
 			return ErrorClientWithGivenApiKeyNotFound
 		}
 
-		// take first
-		client := clients[0]
-
 		//// client should be connected
 		//if client.Status == model.ConnStatusInactive {
 		//	return ErrorClientAlreadyConnected
 		//}
-
-		client.Status = model.ConnStatusInactive
-		err = d.cRepo.Update(client.Id, client)
-		if err != nil {
-			return fmt.Errorf("update calient status: %s", err)
-		}
 
 		d.bus.Unsubscribe(id)
 	}
