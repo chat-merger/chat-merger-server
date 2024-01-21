@@ -41,7 +41,7 @@ func (d *DropClientSubscription) DropClientSubscription(ids ...model.ID) error {
 		//}
 
 		client.Status = model.ConnStatusInactive
-		err = d.cRepo.UpdateClient(client.Id, client)
+		err = d.cRepo.Update(client.Id, client)
 		if err != nil {
 			return fmt.Errorf("update calient status: %s", err)
 		}

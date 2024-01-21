@@ -9,8 +9,10 @@
 
 ### Project
 
-- [] using SQLite instead json file for store client's config
-- [] test coverage
-- [] auto deploy
+- [x] using SQLite instead json file for store client's config
+- [ ] test coverage
+- [ ] auto deploy
+
+
 
 

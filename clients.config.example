@@ -1,9 +1,0 @@
-{
- "clients": [
-  {
-   "id": "some-id",
-   "name": "example-client-name",
-   "api_key": "example-key"
-  }
- ]
-}

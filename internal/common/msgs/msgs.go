@@ -8,6 +8,7 @@ const (
 	// application
 	ApplicationStart                = "Start Application"
 	ApplicationStarted              = "Application start is over, waiting when ctx done"
+	DatabaseInitialized             = "DatabaseInitialized"
 	EventBusCreated                 = "EventBusCreated"
 	UsecasesCreated                 = "UsecasesCreated"
 	RepositoriesInitialized         = "RepositoriesInitialized"

@@ -48,7 +48,7 @@ func (c *SubscribeClientToEvents) SubscribeClientToEvents(id model.ID, handler e
 	}
 
 	client.Status = model.ConnStatusActive
-	err = c.cRepo.UpdateClient(client.Id, client)
+	err = c.cRepo.Update(client.Id, client)
 	if err != nil {
 		return fmt.Errorf("update calient status: %s", err)
 	}

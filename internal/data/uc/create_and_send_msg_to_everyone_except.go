@@ -26,7 +26,7 @@ func NewCreateAndSendMsgToEveryoneExcept(
 
 func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids ...model.ID) (*model.Message, error) {
 	newMsg := &model.Message{
-		Id:       model.NewID(uuid.NewString()),
+		Id:       model.ID(uuid.NewString()),
 		ReplyId:  msg.ReplyId,
 		Date:     msg.Date,
 		Username: msg.Username,

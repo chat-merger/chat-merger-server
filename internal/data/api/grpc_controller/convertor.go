@@ -30,7 +30,7 @@ func requestToCreateMessage(request *pb.Request, client string) (*model.CreateMe
 	}
 
 	return &model.CreateMessage{
-		ReplyId:  stringToIdIfExists(request.ReplyMsgId),
+		ReplyId:  (*model.ID)(request.ReplyMsgId),
 		Date:     time.Unix(request.CreatedAt, 0),
 		Username: request.Username,
 		From:     client,
@@ -42,12 +42,11 @@ func requestToCreateMessage(request *pb.Request, client string) (*model.CreateMe
 func messageToResponse(msg model.Message) (*pb.Response, error) {
 	var replyMsgId *string
 	if msg.ReplyId != nil {
-		id := msg.ReplyId.Value()
-		replyMsgId = &id
+		replyMsgId = (*string)(msg.ReplyId)
 	}
 	// response
 	response := &pb.Response{
-		Id:         msg.Id.Value(),
+		Id:         string(msg.Id),
 		ReplyMsgId: replyMsgId,
 		CreatedAt:  msg.Date.Unix(),
 		Username:   msg.Username,
@@ -87,14 +86,6 @@ func modelBodyMediaToPb(bm model.BodyMedia) *pb.Response_Media {
 			Url:     bm.Url,
 		},
 	}
-}
-
-func stringToIdIfExists(str *string) *model.ID {
-	if str == nil {
-		return nil
-	}
-	var id = model.NewID(*str)
-	return &id
 }
 
 func pbTextFormatToModel(format pb.Text_Format) model.TextFormat {

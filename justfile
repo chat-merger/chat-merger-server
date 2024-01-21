@@ -16,13 +16,16 @@ generated_pb_package_destination := "./internal/data/api"
 # build settings:
 build_output_file := "./bin/chat-merger-server"
 
+# sqlite database file place
+sqlite_db_source_file := "database.db"
+
 default: run
 
 run:
     go run ./cmd/server \
-    --clients-cfg=clients.config \
     --grpc-port=32256 \
-    --http-port=32255
+    --http-port=32255 \
+    --db={{sqlite_db_source_file}}
 
 
 build *FLAGS:
@@ -32,11 +35,13 @@ build *FLAGS:
 #   0. go programming language;
 #   1. proto compiler - protoc;
 #   2. add to .bashrc PATH="$PATH:$(go env GOPATH)/bin"
+#   3. sqlite3
 init:
     go mod tidy
     just install-deps
     just get-api
     just gen-pb
+    sqlite3 {{sqlite_db_source_file}} < ./scripts/sqlite_ddl.sql
 
 gen-pb out=generated_pb_package_destination scheme=(api_scheme_destination+"/"+api_file_name):
     mkdir -p {{out}}

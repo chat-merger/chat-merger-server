@@ -20,17 +20,13 @@ func NewCreateClient(clientRepos repository.ClientsRepository) *CreateClient {
 
 func (r *CreateClient) CreateClient(input model.CreateClient) error {
 	var newClient = model.Client{
-		Id:     model.NewID(uuid.New().String()),
+		Id:     model.ID(uuid.New().String()),
 		Name:   input.Name,
-		ApiKey: model.NewApiKey(uuid.New().String()),
+		ApiKey: model.ApiKey(uuid.New().String()),
 	}
-	clients, err := r.clientRepos.GetClients(model.ClientsFilter{})
+	err := r.clientRepos.Create(newClient)
 	if err != nil {
-		return fmt.Errorf("getting client list: %s", err)
-	}
-	err = r.clientRepos.SetClients(append(clients, newClient))
-	if err != nil {
-		return fmt.Errorf("setting clients list: %s", err)
+		return fmt.Errorf("create client: %s", err)
 	}
 	return nil
 }

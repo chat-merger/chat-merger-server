@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -13,53 +12,23 @@ type CreateClient struct {
 
 // value models
 
-type ID struct {
-	value string
-}
-
-func (r ID) String() string {
-	return fmt.Sprintf("%s", r.value)
-}
-
-func (r ID) Value() string {
-	return r.value
-}
-
-func NewID(val string) ID {
-	return ID{val}
-}
-
-type ApiKey struct {
-	value string
-}
-
-func (r ApiKey) String() string {
-	return fmt.Sprintf("%s", r.value)
-}
-
-func (r ApiKey) Value() string {
-	return r.value
-}
-
-func NewApiKey(val string) ApiKey {
-	return ApiKey{val}
-}
+type ApiKey string
+type ID string
 
 // main models
 
 type Client struct {
-	Id     ID     `json:"id"`
-	Name   string `json:"name,omitempty"`
-	ApiKey ApiKey `json:"api_key"`
+	Id     ID
+	Name   string
+	ApiKey ApiKey
 	Status ConnStatus
 }
 
 type ConnStatus uint8
 
 const (
-	_ ConnStatus = iota
+	ConnStatusInactive ConnStatus = iota
 	ConnStatusActive
-	ConnStatusInactive
 )
 
 type ClientsFilter struct {

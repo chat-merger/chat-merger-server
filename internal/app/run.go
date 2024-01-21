@@ -3,18 +3,29 @@ package app
 import (
 	"chatmerger/internal/common/msgs"
 	"chatmerger/internal/component/eventbus"
+	"chatmerger/internal/component/sqlite"
 	"chatmerger/internal/data/api/grpc_controller"
 	"chatmerger/internal/data/api/http_controller"
-	cr "chatmerger/internal/data/repositories/clients_repository"
+	"chatmerger/internal/data/repositories/sqlite_clients_repo"
 	"chatmerger/internal/data/uc"
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 )
 
 func Run(ctx context.Context, cfg *Config) error {
+	// init db:
+	db, err := sqlite.InitSqlite(sqlite.Config{
+		DataSourceName: cfg.DbFile,
+	})
+	if err != nil {
+		return fmt.Errorf("init databse: %s", err)
+	}
+	log.Println(msgs.DatabaseInitialized)
+
 	// init repos:
-	repos, err := initRepositories(cfg)
+	repos, err := initRepositories(db)
 	if err != nil {
 		return fmt.Errorf("init repositories: %s", err)
 	}
@@ -81,15 +92,9 @@ func (a *application) errorf(format string, args ...any) {
 	}
 }
 
-func initRepositories(cfg *Config) (*repositories, error) {
-	clientsRepo, err := cr.NewClientsRepositoryBase(cr.Config{
-		FilePath: cfg.ClientsCfgFile,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("create clients repository: %s", err)
-	}
+func initRepositories(db *sql.DB) (*repositories, error) {
 	return &repositories{
-		cRepo: clientsRepo,
+		cRepo: sqlite_clients_repo.NewClientsRepository(db),
 	}, nil
 
 }

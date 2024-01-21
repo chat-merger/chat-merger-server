@@ -10,7 +10,7 @@ import (
 type Config struct {
 	GrpcServerPort int
 	HttpServerPort int
-	ClientsCfgFile string
+	DbFile         string
 }
 
 // Flag-feature part:
@@ -26,7 +26,7 @@ func InitFlagSet() *FlagSet {
 	cfgFs.fs = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	cfgFs.fs.IntVar(&cfgFs.cfg.GrpcServerPort, flagNameGrpcPort, 0, "port for gGRPC server (clients api)")
 	cfgFs.fs.IntVar(&cfgFs.cfg.HttpServerPort, flagNameHttpPort, 0, "port for HTTP server (admin web site)")
-	cfgFs.fs.StringVar(&cfgFs.cfg.ClientsCfgFile, flagNameClientsCfg, "", "file with clients settings")
+	cfgFs.fs.StringVar(&cfgFs.cfg.DbFile, flagDbFile, "", "path to sqlite database source")
 	return cfgFs
 }
 
@@ -34,15 +34,15 @@ func InitFlagSet() *FlagSet {
 func (c *FlagSet) cleanLastCfg() {
 	c.cfg.GrpcServerPort = 0
 	c.cfg.HttpServerPort = 0
-	c.cfg.ClientsCfgFile = ""
+	c.cfg.DbFile = ""
 }
 
 // Flag names:
 
 const (
-	flagNameGrpcPort   = "grpc-port"
-	flagNameHttpPort   = "http-port"
-	flagNameClientsCfg = "clients-cfg"
+	flagNameGrpcPort = "grpc-port"
+	flagNameHttpPort = "http-port"
+	flagDbFile       = "db"
 )
 
 // Usage printing "how usage flags" message
@@ -61,14 +61,14 @@ func (c *FlagSet) Parse(args []string) (*Config, error) {
 	newCfg := c.cfg // copy parsed values
 	c.cleanLastCfg()
 
-	if newCfg.GrpcServerPort == 0 {
+	// check what all fields defined
+	switch {
+	case newCfg.GrpcServerPort == 0:
 		return nil, missingArgExit(flagNameGrpcPort)
-	}
-	if newCfg.HttpServerPort == 0 {
+	case newCfg.HttpServerPort == 0:
 		return nil, missingArgExit(flagNameHttpPort)
-	}
-	if newCfg.ClientsCfgFile == "" {
-		return nil, missingArgExit(flagNameClientsCfg)
+	case newCfg.DbFile == "":
+		return nil, missingArgExit(flagDbFile)
 	}
 
 	return &newCfg, nil

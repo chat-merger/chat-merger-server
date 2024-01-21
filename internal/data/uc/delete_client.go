@@ -4,8 +4,7 @@ import (
 	"chatmerger/internal/domain/model"
 	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
-	"fmt"
-	"slices"
+	"log"
 )
 
 var _ usecase.DeleteClientUc = (*DeleteClient)(nil)
@@ -19,22 +18,12 @@ func NewDeleteClient(clientRepos repository.ClientsRepository) *DeleteClient {
 }
 
 func (r *DeleteClient) DeleteClients(ids ...model.ID) error {
-	clients, err := r.clientRepos.GetClients(model.ClientsFilter{})
-	if err != nil {
-		return fmt.Errorf("getting client list: %s", err)
+	// delete each client
+	for _, id := range ids {
+		err := r.clientRepos.Delete(id)
+		if err != nil {
+			log.Printf("[ERROR] delete client: %s", err)
+		}
 	}
-	// remove elements..
-	var newClientsList = slices.DeleteFunc(clients, func(client model.Client) bool {
-		// witch in the list
-		return slices.ContainsFunc(ids, func(id model.ID) bool {
-			return id == client.Id
-		})
-	})
-
-	err = r.clientRepos.SetClients(newClientsList)
-	if err != nil {
-		return fmt.Errorf("setting clients list: %s", err)
-	}
-
 	return nil
 }

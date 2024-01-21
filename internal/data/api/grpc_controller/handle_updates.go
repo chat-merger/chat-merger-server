@@ -55,7 +55,7 @@ func parseConnMetaData(ctx context.Context) metaData {
 	var apiKeyRaw = md.Get(authenticateHeader)
 	var apiKey model.ApiKey
 	if len(apiKeyRaw) > 0 {
-		apiKey = model.NewApiKey(apiKeyRaw[0])
+		apiKey = model.ApiKey(apiKeyRaw[0])
 	}
 	return metaData{
 		ApiKey: apiKey,
@@ -78,7 +78,6 @@ func eventHandler(rpcCall pb.BaseService_UpdatesServer, cancel context.CancelFun
 
 		case event.DropSubscription != nil:
 			cancel()
-
 		}
 		return nil
 	}
