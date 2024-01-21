@@ -18,7 +18,7 @@ func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.
 		return nil, fmt.Errorf("failed get clients: %s", err)
 	}
 	if len(clients) == 0 {
-		return nil, errors.New("not found client")
+		return nil, errors.New("wrong api key")
 	}
 	client := clients[0]
 	msg, err := requestToCreateMessage(req, client.Name)
