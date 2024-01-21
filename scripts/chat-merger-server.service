@@ -7,6 +7,7 @@ After=network-online.target
 Type=simple
 Restart=always
 TimeoutStartSec=30
+WorkingDirectory=/etc/chat-merger-server
 EnvironmentFile=/etc/chat-merger-server/env.conf
 ExecStart=/usr/local/bin/chat-merger-server \
         --grpc-port=${GRPC_API_PORT} \

@@ -14,7 +14,7 @@ api_file_name := "mergerapi.proto"
 generated_pb_package_destination := "./internal/data/api"
 
 # build settings:
-build_output_file_or_directory := "./bin/server"
+build_output_file := "./bin/chat-merger-server"
 
 default: run
 
@@ -26,7 +26,7 @@ run:
 
 
 build *FLAGS:
-    go build -o {{build_output_file_or_directory}} {{FLAGS}}  ./cmd/server/main.go
+    go build -o {{build_output_file}} {{FLAGS}} ./cmd/server
 
 # required:
 #   0. go programming language;
