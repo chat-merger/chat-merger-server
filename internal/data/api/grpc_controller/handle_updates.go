@@ -2,7 +2,7 @@ package grpc_controller
 
 import (
 	"chatmerger/internal/common/msgs"
-	"chatmerger/internal/common/vals"
+	"chatmerger/internal/component/eventbus"
 	"chatmerger/internal/data/api/pb"
 	"chatmerger/internal/domain/model"
 	"context"
@@ -27,14 +27,16 @@ func (s *GrpcController) Updates(_ *emptypb.Empty, rpcCall pb.BaseService_Update
 
 	client := clients[0]
 
-	err = s.SubscribeClientToNewMsgs(client.Id, msgsEventHandler(rpcCall))
+	ctx, cancel := context.WithCancel(rpcCall.Context())
+
+	err = s.SubscribeClientToEvents(client.Id, eventHandler(rpcCall, cancel))
 	if err != nil {
-		return fmt.Errorf("failed subscribe to new msgs: %s", err)
+		return fmt.Errorf("failed subscribe to events: %s", err)
 	}
 	log.Println(msgs.ClientSubscribedToNewMsgs)
 
 	select {
-	case <-rpcCall.Context().Done():
+	case <-ctx.Done():
 		s.DropClientSubscription(client.Id)
 		return nil
 	}
@@ -44,9 +46,13 @@ type metaData struct {
 	ApiKey model.ApiKey
 }
 
+const (
+	authenticateHeader = "X-Api-Key"
+)
+
 func parseConnMetaData(ctx context.Context) metaData {
 	var md, _ = metadata.FromIncomingContext(ctx)
-	var apiKeyRaw = md.Get(vals.AUTHENTICATE_HEADER)
+	var apiKeyRaw = md.Get(authenticateHeader)
 	var apiKey model.ApiKey
 	if len(apiKeyRaw) > 0 {
 		apiKey = model.NewApiKey(apiKeyRaw[0])
@@ -56,15 +62,23 @@ func parseConnMetaData(ctx context.Context) metaData {
 	}
 }
 
-func msgsEventHandler(rpcCall pb.BaseService_UpdatesServer) func(model.Message) error {
-	return func(message model.Message) error {
-		response, err := messageToResponse(message)
-		if err != nil {
-			return fmt.Errorf("failed convert msg to response: %s\n", err)
-		}
-		err = rpcCall.Send(response)
-		if err != nil {
-			return fmt.Errorf("failed send response: %s\n", err)
+func eventHandler(rpcCall pb.BaseService_UpdatesServer, cancel context.CancelFunc) eventbus.Handler {
+	return func(event eventbus.Event) error {
+		switch {
+
+		case event.Message != nil:
+			response, err := messageToResponse(*event.Message)
+			if err != nil {
+				return fmt.Errorf("failed convert msg to response: %s\n", err)
+			}
+			err = rpcCall.Send(response)
+			if err != nil {
+				return fmt.Errorf("failed send response: %s\n", err)
+			}
+
+		case event.DropSubscription != nil:
+			cancel()
+
 		}
 		return nil
 	}

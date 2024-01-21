@@ -1,8 +1,8 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"fmt"
 	"github.com/google/uuid"
@@ -11,10 +11,10 @@ import (
 var _ usecase.CreateClientUc = (*CreateClient)(nil)
 
 type CreateClient struct {
-	clientRepos domain.ClientsRepository
+	clientRepos repository.ClientsRepository
 }
 
-func NewCreateClient(clientRepos domain.ClientsRepository) *CreateClient {
+func NewCreateClient(clientRepos repository.ClientsRepository) *CreateClient {
 	return &CreateClient{clientRepos: clientRepos}
 }
 

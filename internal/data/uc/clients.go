@@ -1,8 +1,8 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"fmt"
 )
@@ -10,10 +10,10 @@ import (
 var _ usecase.ClientsUc = (*Clients)(nil)
 
 type Clients struct {
-	cRepo domain.ClientsRepository
+	cRepo repository.ClientsRepository
 }
 
-func NewClients(cRepo domain.ClientsRepository) *Clients {
+func NewClients(cRepo repository.ClientsRepository) *Clients {
 	return &Clients{cRepo: cRepo}
 }
 

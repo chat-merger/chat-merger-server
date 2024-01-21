@@ -1,8 +1,8 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"fmt"
 	"slices"
@@ -11,10 +11,10 @@ import (
 var _ usecase.DeleteClientUc = (*DeleteClient)(nil)
 
 type DeleteClient struct {
-	clientRepos domain.ClientsRepository
+	clientRepos repository.ClientsRepository
 }
 
-func NewDeleteClient(clientRepos domain.ClientsRepository) *DeleteClient {
+func NewDeleteClient(clientRepos repository.ClientsRepository) *DeleteClient {
 	return &DeleteClient{clientRepos: clientRepos}
 }
 

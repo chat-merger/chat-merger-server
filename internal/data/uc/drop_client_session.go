@@ -1,9 +1,9 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
+	"chatmerger/internal/component/eventbus"
 	"chatmerger/internal/domain/model"
-	"chatmerger/internal/service/msgbus"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"fmt"
 )
@@ -11,11 +11,11 @@ import (
 var _ usecase.DropClientSubscriptionUc = (*DropClientSubscription)(nil)
 
 type DropClientSubscription struct {
-	cRepo domain.ClientsRepository
-	bus   *msgbus.MessagesBus
+	cRepo repository.ClientsRepository
+	bus   *eventbus.EventBus
 }
 
-func NewDropClientSubscription(repo domain.ClientsRepository, bus *msgbus.MessagesBus) *DropClientSubscription {
+func NewDropClientSubscription(repo repository.ClientsRepository, bus *eventbus.EventBus) *DropClientSubscription {
 	return &DropClientSubscription{cRepo: repo, bus: bus}
 }
 

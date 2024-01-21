@@ -1,4 +1,4 @@
-package msgbus
+package eventbus
 
 import (
 	"chatmerger/internal/domain/model"
@@ -6,36 +6,40 @@ import (
 	"sync"
 )
 
-type Event = model.Message // todo +onDropSubscriptionEvent
-type Subject = model.ID    // client.ID
+type Event struct {
+	Message          *model.Message
+	DropSubscription *struct{}
+}
+
+type Subject = model.ID // client.ID
 
 type Handler func(event Event) error
 
-type MessagesBus struct {
+type EventBus struct {
 	handlers map[Subject]Handler
-	mu       sync.Mutex
+	mu       *sync.Mutex
 }
 
-func NewMessagesBus() *MessagesBus {
-	return &MessagesBus{
+func NewEventBus() *EventBus {
+	return &EventBus{
 		handlers: make(map[Subject]Handler),
-		mu:       sync.Mutex{},
+		mu:       new(sync.Mutex),
 	}
 }
 
-func (m *MessagesBus) Subscribe(subj Subject, handler Handler) {
+func (m *EventBus) Subscribe(subj Subject, handler Handler) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.handlers[subj] = handler
 }
 
-func (m *MessagesBus) Unsubscribe(subj Subject) {
+func (m *EventBus) Unsubscribe(subj Subject) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.handlers, subj)
 }
 
-func (m *MessagesBus) Publish(event Event, subjects ...Subject) error {
+func (m *EventBus) Publish(event Event, subjects ...Subject) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, s := range subjects {

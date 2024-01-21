@@ -22,7 +22,7 @@ type Config struct {
 
 type requiredUsecases interface {
 	usecase.CreateAndSendMsgToEveryoneExceptUc
-	usecase.SubscribeClientToNewMsgsUc
+	usecase.SubscribeClientToEventsUc
 	usecase.DropClientSubscriptionUc
 	usecase.ClientsUc
 }

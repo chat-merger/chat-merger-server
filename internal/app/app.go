@@ -1,8 +1,7 @@
 package app
 
 import (
-	"chatmerger/internal/domain"
-	"chatmerger/internal/service/msgbus"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"context"
 	"sync"
@@ -31,7 +30,7 @@ func newApplication(ctx context.Context, usecases usecasesImpls) (*application, 
 
 type usecasesImpls struct {
 	usecase.CreateAndSendMsgToEveryoneExceptUc
-	usecase.SubscribeClientToNewMsgsUc
+	usecase.SubscribeClientToEventsUc
 	usecase.DropClientSubscriptionUc
 	usecase.ClientsUc
 	usecase.CreateClientUc
@@ -39,9 +38,5 @@ type usecasesImpls struct {
 }
 
 type repositories struct {
-	cRepo domain.ClientsRepository
-}
-
-type services struct {
-	bus *msgbus.MessagesBus
+	cRepo repository.ClientsRepository
 }

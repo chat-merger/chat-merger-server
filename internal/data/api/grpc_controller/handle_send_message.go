@@ -25,7 +25,7 @@ func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.
 	if err != nil {
 		return nil, fmt.Errorf("transform request to response: %v\n", err)
 	}
-	newMsg, err := s.CreateAndSendMsgToEveryoneExcept(*msg, []model.ID{client.Id})
+	newMsg, err := s.CreateAndSendMsgToEveryoneExcept(*msg, client.Id)
 	if err != nil {
 		return nil, fmt.Errorf("send msg to clients: %v\n", err)
 	}

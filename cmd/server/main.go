@@ -3,8 +3,6 @@ package main
 import (
 	"chatmerger/internal/app"
 	"chatmerger/internal/common/msgs"
-	"chatmerger/internal/common/vals"
-	"chatmerger/internal/config"
 	"context"
 	"errors"
 	"log"
@@ -24,7 +22,7 @@ func main() {
 	gracefulShutdown(cancel)
 }
 
-func runApplication(ctx context.Context, cfg *config.Config) {
+func runApplication(ctx context.Context, cfg *app.Config) {
 	log.Println(msgs.ApplicationStart)
 	err := app.Run(ctx, cfg)
 	if err != nil {
@@ -33,13 +31,13 @@ func runApplication(ctx context.Context, cfg *config.Config) {
 	os.Exit(0)
 }
 
-func initConfig() *config.Config {
-	cfgFs := config.InitFlagSet()
+func initConfig() *app.Config {
+	cfgFs := app.InitFlagSet()
 
 	cfg, err := cfgFs.Parse(os.Args[1:])
 	if err != nil {
 		log.Printf("config FlagSet initialization: %s", err)
-		if errors.Is(err, config.WrongArgumentError) {
+		if errors.Is(err, app.ErrorWrongArgument) {
 			cfgFs.Usage()
 		}
 		os.Exit(2)
@@ -53,8 +51,9 @@ func gracefulShutdown(cancel context.CancelFunc) {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	log.Printf("%s signal was received", <-quit)
-	log.Println(msgs.ProgramWillForceExit)
+	var timeout = 2 * time.Second
+	log.Printf("after %v seconds, the program will force exit", timeout.Seconds())
 	cancel()
-	time.Sleep(vals.GracefulShutdownTimeout)
+	time.Sleep(timeout)
 	os.Exit(0)
 }

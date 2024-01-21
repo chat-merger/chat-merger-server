@@ -1,10 +1,5 @@
 package msgs
 
-import (
-	"chatmerger/internal/common/vals"
-	"fmt"
-)
-
 const (
 	// main
 	ServerStarting    = "Server Starting"
@@ -13,7 +8,7 @@ const (
 	// application
 	ApplicationStart                = "Start Application"
 	ApplicationStarted              = "Application start is over, waiting when ctx done"
-	ServicesCreated                 = "ServicesCreated"
+	EventBusCreated                 = "EventBusCreated"
 	UsecasesCreated                 = "UsecasesCreated"
 	RepositoriesInitialized         = "RepositoriesInitialized"
 	ApplicationReceiveCtxDone       = "Application receive ctx.Done signal"
@@ -33,8 +28,4 @@ const (
 	//  controller
 	RunController     = "Run Controller"
 	StoppedController = "Stopped Controller"
-)
-
-var (
-	ProgramWillForceExit = fmt.Sprintf("after %v seconds, the program will force exit", vals.GracefulShutdownTimeout.Seconds())
 )

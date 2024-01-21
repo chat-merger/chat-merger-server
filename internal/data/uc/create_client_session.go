@@ -1,26 +1,26 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
+	"chatmerger/internal/component/eventbus"
 	"chatmerger/internal/domain/model"
-	"chatmerger/internal/service/msgbus"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"errors"
 	"fmt"
 )
 
-var _ usecase.SubscribeClientToNewMsgsUc = (*SubscribeClientToNewMsgs)(nil)
+var _ usecase.SubscribeClientToEventsUc = (*SubscribeClientToEvents)(nil)
 
-type SubscribeClientToNewMsgs struct {
-	cRepo domain.ClientsRepository
-	bus   *msgbus.MessagesBus
+type SubscribeClientToEvents struct {
+	cRepo repository.ClientsRepository
+	bus   *eventbus.EventBus
 }
 
-func NewSubscribeClientToNewMsgs(
-	cRepo domain.ClientsRepository,
-	bus *msgbus.MessagesBus,
-) *SubscribeClientToNewMsgs {
-	return &SubscribeClientToNewMsgs{cRepo: cRepo, bus: bus}
+func NewSubscribeClientToEvents(
+	cRepo repository.ClientsRepository,
+	bus *eventbus.EventBus,
+) *SubscribeClientToEvents {
+	return &SubscribeClientToEvents{cRepo: cRepo, bus: bus}
 }
 
 var (
@@ -28,7 +28,7 @@ var (
 	ErrorClientAlreadyConnected        = errors.New("client already connected")
 )
 
-func (c *SubscribeClientToNewMsgs) SubscribeClientToNewMsgs(id model.ID, handler func(newMsg model.Message) error) error {
+func (c *SubscribeClientToEvents) SubscribeClientToEvents(id model.ID, handler eventbus.Handler) error {
 	clients, err := c.cRepo.GetClients(model.ClientsFilter{Id: &id})
 	if err != nil {
 		return fmt.Errorf("get clients: %s", err)

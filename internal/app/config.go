@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"errors"
@@ -51,7 +51,7 @@ func (c *FlagSet) Usage() { c.fs.Usage() }
 // Parse is Config factory method
 func (c *FlagSet) Parse(args []string) (*Config, error) {
 	missingArgExit := func(argName string) error {
-		return fmt.Errorf("missing `%s` argument: %w", argName, WrongArgumentError)
+		return fmt.Errorf("missing `%s` argument: %w", argName, ErrorWrongArgument)
 	}
 
 	err := c.fs.Parse(args)
@@ -74,4 +74,4 @@ func (c *FlagSet) Parse(args []string) (*Config, error) {
 	return &newCfg, nil
 }
 
-var WrongArgumentError = errors.New("wrong argument")
+var ErrorWrongArgument = errors.New("wrong argument")

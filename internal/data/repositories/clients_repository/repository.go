@@ -1,20 +1,20 @@
 package clients_repository
 
 import (
-	"chatmerger/internal/domain"
 	"chatmerger/internal/domain/model"
+	"chatmerger/internal/domain/repository"
 	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
 )
 
-var _ domain.ClientsRepository = (*ClientsRepositoryBase)(nil)
+var _ repository.ClientsRepository = (*ClientsRepositoryBase)(nil)
 
 type ClientsRepositoryBase struct {
 	clients []model.Client
 	cfg     Config
-	mu      sync.RWMutex
+	mu      *sync.RWMutex
 }
 
 func NewClientsRepositoryBase(cfg Config) (*ClientsRepositoryBase, error) {
@@ -27,7 +27,7 @@ func NewClientsRepositoryBase(cfg Config) (*ClientsRepositoryBase, error) {
 	return &ClientsRepositoryBase{
 		clients: fb.convertToDomain(),
 		cfg:     cfg,
-		mu:      sync.RWMutex{},
+		mu:      new(sync.RWMutex),
 	}, nil
 }
 

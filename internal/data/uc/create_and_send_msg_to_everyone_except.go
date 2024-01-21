@@ -1,9 +1,9 @@
 package uc
 
 import (
-	"chatmerger/internal/domain"
+	"chatmerger/internal/component/eventbus"
 	"chatmerger/internal/domain/model"
-	"chatmerger/internal/service/msgbus"
+	"chatmerger/internal/domain/repository"
 	"chatmerger/internal/usecase"
 	"fmt"
 	"github.com/google/uuid"
@@ -13,19 +13,19 @@ import (
 var _ usecase.CreateAndSendMsgToEveryoneExceptUc = (*CreateAndSendMsgToEveryoneExcept)(nil)
 
 type CreateAndSendMsgToEveryoneExcept struct {
-	cRepo domain.ClientsRepository
-	bus   *msgbus.MessagesBus
+	cRepo repository.ClientsRepository
+	bus   *eventbus.EventBus
 }
 
 func NewCreateAndSendMsgToEveryoneExcept(
-	cRepo domain.ClientsRepository,
-	bus *msgbus.MessagesBus,
+	cRepo repository.ClientsRepository,
+	bus *eventbus.EventBus,
 ) *CreateAndSendMsgToEveryoneExcept {
 	return &CreateAndSendMsgToEveryoneExcept{bus: bus, cRepo: cRepo}
 }
 
-func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids []model.ID) (*model.Message, error) {
-	newMsg := model.Message{
+func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids ...model.ID) (*model.Message, error) {
+	newMsg := &model.Message{
 		Id:       model.NewID(uuid.NewString()),
 		ReplyId:  msg.ReplyId,
 		Date:     msg.Date,
@@ -52,10 +52,10 @@ func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg 
 		}
 	}
 
-	err = r.bus.Publish(newMsg, recipients...)
+	err = r.bus.Publish(eventbus.Event{Message: newMsg}, recipients...)
 	if err != nil {
 		return nil, fmt.Errorf("publish new message: %s", err)
 	}
 
-	return &newMsg, nil
+	return newMsg, nil
 }
