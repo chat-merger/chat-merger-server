@@ -29,7 +29,7 @@ func newMsgToDomain(request *pb.NewMessageBody, client string) (*model.CreateMes
 	return msg, nil
 }
 
-func newMsgToPb(msg model.Message) (*pb.Message, error) {
+func msgToPb(msg model.Message) (*pb.Message, error) {
 	var replyMsgId *string
 	if msg.ReplyId != nil {
 		replyMsgId = (*string)(msg.ReplyId)

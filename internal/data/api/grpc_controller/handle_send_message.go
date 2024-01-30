@@ -29,7 +29,7 @@ func (s *GrpcController) SendMessage(ctx context.Context, req *pb.NewMessageBody
 	if err != nil {
 		return nil, fmt.Errorf("send msg to clients: %v\n", err)
 	}
-	resp, err := newMsgToPb(*newMsg)
+	resp, err := msgToPb(*newMsg)
 	if err != nil {
 		return nil, fmt.Errorf("failed convert msg to response: %v\n", err)
 	}
