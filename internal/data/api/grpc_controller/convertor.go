@@ -3,103 +3,106 @@ package grpc_controller
 import (
 	"chatmerger/internal/data/api/pb"
 	"chatmerger/internal/domain/model"
-	"errors"
-	"log"
 	"time"
 )
 
-func requestToCreateMessage(request *pb.Request, client string) (*model.CreateMessage, error) {
-	var body model.Body
-	switch request.Body.(type) {
-	case *pb.Request_Text:
-		var rt = request.Body.(*pb.Request_Text).Text
-		body = &model.BodyText{
-			Format: pbTextFormatToModel(rt.Format),
-			Value:  rt.Value,
-		}
-	case *pb.Request_Media:
-		var rm = request.Body.(*pb.Request_Media).Media
-		body = &model.BodyMedia{
-			Kind:    pbMediaTypeToModel(rm.Type),
-			Caption: rm.Caption,
-			Spoiler: rm.Spoiler,
-			Url:     rm.Url,
-		}
-	default:
-		return nil, errors.New("request body not match with RequestBody interface")
+func newMsgToDomain(request *pb.NewMessageBody, client string) (*model.CreateMessage, error) {
+
+	msg := &model.CreateMessage{
+		ReplyId:   (*model.ID)(request.ReplyMsgId),
+		Date:      time.Unix(request.CreatedAt, 0),
+		Username:  request.Username,
+		From:      client,
+		Silent:    request.Silent,
+		Text:      request.Text,
+		Media:     make([]model.Media, 0, len(request.Media)),
+		Forwarded: make([]model.Forward, 0, len(request.Forwarded)),
+	}
+	// add media
+	for _, it := range request.Media {
+		msg.Media = append(msg.Media, mediaToDomain(it))
+	}
+	for _, it := range request.Forwarded {
+		msg.Forwarded = append(msg.Forwarded, forwardToDomain(it))
 	}
 
-	return &model.CreateMessage{
-		ReplyId:  (*model.ID)(request.ReplyMsgId),
-		Date:     time.Unix(request.CreatedAt, 0),
-		Username: request.Username,
-		From:     client,
-		Silent:   request.Silent,
-		Body:     body,
-	}, nil
+	return msg, nil
 }
 
-func messageToResponse(msg model.Message) (*pb.Response, error) {
+func newMsgToPb(msg model.Message) (*pb.Message, error) {
 	var replyMsgId *string
 	if msg.ReplyId != nil {
 		replyMsgId = (*string)(msg.ReplyId)
 	}
 	// response
-	response := &pb.Response{
+	response := &pb.Message{
 		Id:         string(msg.Id),
-		ReplyMsgId: replyMsgId,
-		CreatedAt:  msg.Date.Unix(),
-		Username:   msg.Username,
 		Client:     msg.From,
+		CreatedAt:  msg.Date.Unix(),
 		Silent:     msg.Silent,
-		Body:       nil, // WithoutBody!!!!!
+		ReplyMsgId: replyMsgId,
+		Username:   msg.Username,
+		Text:       msg.Text,
+		Media:      make([]*pb.Media, 0, len(msg.Media)),
+		Forwarded:  make([]*pb.Forwarded, 0, len(msg.Forwarded)),
 	}
-	// add body
-	switch msg.Body.(type) {
-	case *model.BodyText:
-		text := msg.Body.(*model.BodyText)
-		response.Body = modelBodyTextToPb(*text)
-	case *model.BodyMedia:
-		media := msg.Body.(*model.BodyMedia)
-		response.Body = modelBodyMediaToPb(*media)
-	default:
-		log.Fatalf("unknown msg.Body:  %#v", msg.Body)
+	// add media
+	for _, it := range msg.Media {
+		response.Media = append(response.Media, mediaToPb(it))
 	}
+	// add forwarded
+	for _, it := range msg.Forwarded {
+		response.Forwarded = append(response.Forwarded, forwardToPb(it))
+	}
+
 	return response, nil
 }
 
-func modelBodyTextToPb(bt model.BodyText) *pb.Response_Text {
-	return &pb.Response_Text{
-		Text: &pb.Text{
-			Format: modelTextFormatToPbTextFormat(bt.Format),
-			Value:  bt.Value,
-		},
+func forwardToPb(bm model.Forward) *pb.Forwarded {
+	media := make([]*pb.Media, 0, len(bm.Media))
+	for _, it := range bm.Media {
+		media = append(media, mediaToPb(it))
+	}
+	return &pb.Forwarded{
+		Id:        (*string)(bm.Id),
+		CreatedAt: bm.Date.Unix(),
+		Username:  bm.Username,
+		Text:      bm.Text,
+		Media:     media,
 	}
 }
 
-func modelBodyMediaToPb(bm model.BodyMedia) *pb.Response_Media {
-	return &pb.Response_Media{
-		Media: &pb.Media{
-			Type:    modelMediaTypeToPbMediaType(bm.Kind),
-			Caption: bm.Caption,
-			Spoiler: bm.Spoiler,
-			Url:     bm.Url,
-		},
+func forwardToDomain(bm *pb.Forwarded) model.Forward {
+	media := make([]model.Media, 0, len(bm.Media))
+	for _, it := range bm.Media {
+		media = append(media, mediaToDomain(it))
+	}
+	return model.Forward{
+		Id:       (*model.ID)(bm.Id),
+		Date:     time.Unix(bm.CreatedAt, 0),
+		Username: bm.Username,
+		Text:     bm.Text,
+		Media:    media,
 	}
 }
 
-func pbTextFormatToModel(format pb.Text_Format) model.TextFormat {
-	var tf model.TextFormat
-	switch format {
-	case pb.Text_MARKDOWN:
-		tf = model.Markdown
-	case pb.Text_PLAIN:
-		tf = model.Plain
+func mediaToDomain(bm *pb.Media) model.Media {
+	return model.Media{
+		Kind:    mediaTypeToDomain(bm.Type),
+		Spoiler: bm.Spoiler,
+		Url:     bm.Url,
 	}
-	return tf
 }
 
-func pbMediaTypeToModel(kind pb.Media_Type) model.MediaType {
+func mediaToPb(bm model.Media) *pb.Media {
+	return &pb.Media{
+		Type:    mediaTypeToPb(bm.Kind),
+		Spoiler: bm.Spoiler,
+		Url:     bm.Url,
+	}
+}
+
+func mediaTypeToDomain(kind pb.Media_Type) model.MediaType {
 	var tf model.MediaType
 	switch kind {
 	case pb.Media_AUDIO:
@@ -116,18 +119,7 @@ func pbMediaTypeToModel(kind pb.Media_Type) model.MediaType {
 	return tf
 }
 
-func modelTextFormatToPbTextFormat(format model.TextFormat) pb.Text_Format {
-	var tf pb.Text_Format
-	switch format {
-	case model.Markdown:
-		tf = pb.Text_MARKDOWN
-	case model.Plain:
-		tf = pb.Text_PLAIN
-	}
-	return tf
-}
-
-func modelMediaTypeToPbMediaType(kind model.MediaType) pb.Media_Type {
+func mediaTypeToPb(kind model.MediaType) pb.Media_Type {
 	var tf pb.Media_Type
 	switch kind {
 	case model.Audio:

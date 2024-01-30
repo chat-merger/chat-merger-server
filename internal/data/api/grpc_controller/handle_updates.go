@@ -67,7 +67,7 @@ func eventHandler(rpcCall pb.BaseService_UpdatesServer, cancel context.CancelFun
 		switch {
 
 		case event.Message != nil:
-			response, err := messageToResponse(*event.Message)
+			response, err := newMsgToPb(*event.Message)
 			if err != nil {
 				return fmt.Errorf("failed convert msg to response: %s\n", err)
 			}

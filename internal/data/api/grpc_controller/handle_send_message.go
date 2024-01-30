@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+func (s *GrpcController) SendMessage(ctx context.Context, req *pb.NewMessageBody) (*pb.Message, error) {
 	var md = parseConnMetaData(ctx)
 	log.Printf("%s: %+v", msgs.NewMessageFromClient, md)
 	clients, err := s.Clients(model.ClientsFilter{ApiKey: &md.ApiKey})
@@ -21,7 +21,7 @@ func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.
 		return nil, errors.New("wrong api key")
 	}
 	client := clients[0]
-	msg, err := requestToCreateMessage(req, client.Name)
+	msg, err := newMsgToDomain(req, client.Name)
 	if err != nil {
 		return nil, fmt.Errorf("transform request to response: %v\n", err)
 	}
@@ -29,7 +29,7 @@ func (s *GrpcController) SendMessage(ctx context.Context, req *pb.Request) (*pb.
 	if err != nil {
 		return nil, fmt.Errorf("send msg to clients: %v\n", err)
 	}
-	resp, err := messageToResponse(*newMsg)
+	resp, err := newMsgToPb(*newMsg)
 	if err != nil {
 		return nil, fmt.Errorf("failed convert msg to response: %v\n", err)
 	}

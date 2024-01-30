@@ -26,13 +26,15 @@ func NewCreateAndSendMsgToEveryoneExcept(
 
 func (r *CreateAndSendMsgToEveryoneExcept) CreateAndSendMsgToEveryoneExcept(msg model.CreateMessage, ids ...model.ID) (*model.Message, error) {
 	newMsg := &model.Message{
-		Id:       model.ID(uuid.NewString()),
-		ReplyId:  msg.ReplyId,
-		Date:     msg.Date,
-		Username: msg.Username,
-		From:     msg.From,
-		Silent:   msg.Silent,
-		Body:     msg.Body,
+		Id:        model.ID(uuid.NewString()),
+		ReplyId:   msg.ReplyId,
+		Date:      msg.Date,
+		Username:  msg.Username,
+		From:      msg.From,
+		Silent:    msg.Silent,
+		Text:      msg.Text,
+		Media:     msg.Media,
+		Forwarded: msg.Forwarded,
 	}
 	clients, err := r.cRepo.GetClients(model.ClientsFilterExceptStatus{})
 	if err != nil {
